@@ -16,6 +16,7 @@ def create():
     cmd = "docker run -d -p "+port+":6901 -e VNC_PW="+pwd+" test1:latest"  # 지정된 port로 가상환경 실행 
     stream = os.popen(cmd)
     containerId = stream.read()[:12]
+
     
     response = {
             'port': port,
@@ -25,7 +26,7 @@ def create():
     return jsonify(response), 200
 
 
-
+  
 # 웹 페이지에서 컨테이너 중지 요청이 왔을 때 
 @app.route('/start', methods=['POST'])
 def start():
