@@ -1,10 +1,13 @@
 from flask import Flask, render_template, request, jsonify
-import os, sys, json, time
+import os, time
 
 app = Flask(__name__)
 
-def createContainerCmd(port, userId, pwd) : # port, pwd로 컨테이너 생성
-    return "docker create -p "+port+":6901 -e VNC_PW="+pwd+" registry.p2kcloud.com/base/"+userId+":"+port
+def createContainerCmd(port, pwd, imageId) : # 
+    return "docker create -p "+port+":6901 -e VNC_PW="+pwd+" --name vm"+port+" "+imageId
+    
+def loadContainerCmd(port, pwd, imageId) :
+    return "docker create -p "+port+":6901 -e VNC_PW="+pwd+" "+imageId
 
 def startContainerCmd(containerId) : # containerid로 컨테이너 실행
     return "docker start "+containerId
@@ -24,8 +27,8 @@ def saveImgCmd(containerId, userId, port) : # 새로운 이미지 저장
 def pushImgCmd(userId, port) :
     return "docker push registry.p2kcloud.com/base/"+userId+":"+port
 
-def deleteImgCmd(userId, port) :
-    return "docker rmi -f registry.p2kcloud.com/base/"+userId+":"+port
+def deleteImgCmd(imageId) :
+    return "docker rmi -f "+imageId
 
 
 
@@ -34,25 +37,48 @@ def deleteImgCmd(userId, port) :
 def create():
     requestDTO = request.get_json()  # spring에서 온 요청 데이터
     print("[create requestDTO] ", requestDTO)
-    port, pwd = str(requestDTO['port']), str(requestDTO['password'])
+    userId, port, pwd = str(requestDTO['id']), str(requestDTO['port']), str(requestDTO['password'])
     
-    cmd1 = "docker pull registry.p2kcloud.com/base/vncdesktop"  # harbor에서 kasm 이미지 pull
-    os.popen(cmd1)
+    #cmd1 = "docker pull registry.p2kcloud.com/base/vncdesktop"  # harbor에서 kasm 이미지 pull -> 이미 pull 받아짐
+    cmd1 = createContainerCmd(port, pwd, '9e4131d0')
+    stream1 = os.popen(cmd1)
+    containerId = stream1.read()[:12]
     time.sleep(8)
     
-    cmd2 = "docker images registry.p2kcloud.com/base/vncdesktop -q"  # 이미지 id 추출
-    stream2 = os.popen(cmd2)
-    imageId = stream2.read()[:12]
+    cmd3 = saveImgCmd(containerId, userId, port)
+    stream3 = os.popen(cmd3)
+    imageId = stream3.read()[7:20]
     
-    cmd = "docker create -p "+port+":6901 -e VNC_PW="+pwd+" registry.p2kcloud.com/base/vncdesktop" # 컨테이너 생성
-    stream = os.popen(cmd)
-    containerId = stream.read()[:12]
 
     response = {
             'port': port,
             'containerId' : containerId,
             'imageId' : imageId
         }
+    
+    return jsonify(response), 200
+
+
+
+
+#웹 페이지에서 가상환경 로드했을 때, 이미지로 컨테이너 생성 후 다시 이미지로 저장
+@app.route('/load', methods=['POST'])
+def load() :
+    requestDTO = request.get_json()
+    print("[load requestDTO] ", requestDTO)
+    userId, port, pwd, imageId = str(requestDTO['id']), str(requestDTO['port']), str(requestDTO['password']), str(requestDTO['key'])
+    
+    stream1 = os.popen(loadContainerCmd(port, pwd, imageId))
+    containerId = stream1.read()[:12]
+    print("containerId", containerId)
+    
+    stream2 = os.popen(saveImgCmd(containerId, userId, port))
+    imageId = stream2.read()[7:20]
+    
+    response = {
+        'containerId' : containerId,
+        'imageId' : imageId
+    }
     
     return jsonify(response), 200
 
@@ -103,40 +129,24 @@ def save() :
     userId, port, pwd = str(requestDTO['id']), str(requestDTO['port']), str(requestDTO['pwd'])
     containerId, imageId = str(requestDTO['containerId']), str(requestDTO['imageId'])
     
-    cmd1 = "docker commit "+containerId+" registry.p2kcloud.com/base/"+userId+":"+port   # 새로운 이미지 생성
-    cmd2 = "docker rm "+containerId                                                     # 기존 컨테이너 삭제
-    cmd3 = "docker rmi -f registry.p2kcloud.com/base/"+userId+":"+port                                                   # 기존 이미지 삭제 
-    cmd4 = "docker create -p "+port+":6901 -e VNC_PW="+pwd+" registry.p2kcloud.com/base/"+userId+":"+port    # 새로운 컨테이너 실행
-    cmd5 = "docker push registry.p2kcloud.com/base/"+userId+":"+port             # 하버에 이미지 올리기
-    cmd6 = "docker images registry.p2kcloud.com/base/"+userId+":"+port+" -q"     # 새로운 이미지 id 추출 
     
+    # 과정: 컨테이너에서 새로운 이미지 저장 -> 기존 이미지 삭제 -> push
     
     stream1 = os.popen(saveImgCmd(containerId, userId, port))
+    newImageId = stream1.read()[7:20]
     print("1 : ", stream1.read())
     
-    stream2 = os.popen(deleteContainerCmd(containerId))
+    stream2 = os.popen(deleteImgCmd(imageId))
     print("2 : ", stream2.read())
     
-    time.sleep(1)
-    stream4 = os.popen(createContainerCmd(port, userId, pwd))
-    newContainerId = stream4.read()[:12]
-    print("4 : ", stream4.read())
-    
     stream5 = os.popen(pushImgCmd(userId, port))
-    print("5 : ", stream5.read())
-    
-    time.sleep(3)
-    stream6 = os.popen(findImgIdCmd(userId, port))
-    newImageId = stream6.read()[:12]
-    print("6 : ", stream6.read())
-    
+    print("3 : ", stream5.read())
     time.sleep(3)
     
-    print("newContainerId : ", newContainerId)
     print("newImageId : ", newImageId)
     
     response = {
-            'containerId' : newContainerId,
+            'containerId' : containerId,
             'imageId' : newImageId
         }
     
@@ -153,7 +163,7 @@ def delete():
     containerId, imageId = str(requestDTO['containerId']), str(requestDTO['imageId'])
     
     os.popen(deleteContainerCmd(containerId))
-    os.popen(deleteImgCmd(userId, port))
+    os.popen(deleteImgCmd(imageId))
     
     response = {
             'port' : port,
