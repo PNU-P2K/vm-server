@@ -71,41 +71,11 @@ def create():
     print("[create requestDTO] ", requestDTO)
     userId, port, pwd = str(requestDTO['id']), str(requestDTO['port']), str(requestDTO['password'])
     #scope = str(requestDTO['scope'])
-    scope = True
     
     stream1 = os.popen(createContainerCmd(port, pwd, baseImageId))
     containerId = stream1.read()[:12]
     time.sleep(5)
     enContainerId = aes.encrypt(containerId) # containerId 암호화 
-    
-    # 비밀번호 바꾸기
-    # 23 : viewerpw
-    # 26 : vncuserpw
-    # 354 : user 
-    # 355 : viewer 비밀번호 저장 라인 
-    if scope==True : # 전체공개이면 
-        print("start")
-        control = True
-        cmd1 = "docker exec -it --user root "+containerId+" bash" 
-        #print(os.popen(cmd1).read())
-        os.popen(cmd1)
-        cmd3 = "sed -i '23d' /dockerstartup/vnc_startup.sh"
-        #print(os.popen(cmd3).read())
-        os.system(cmd3)
-        cmd4 = "sed -i '23 i VNC_VIEW_ONLY_PW=\"guest\"' /dockerstartup/vnc_startup.sh"
-        os.popen(cmd4)
-        cmd5 = "sed -i '355d' /dockerstartup/vnc_startup.sh"
-        os.popen(cmd5)
-        if control==True : # 제어권 허락 
-            cmd6 = "sed -i '355 i echo \"guest:${VNC_VIEW_PW_HASH}:w\" >> $PASSWD_PATH' /dockerstartup/vnc_startup.sh"
-            os.popen(cmd6)
-        else : # 보기만 가능 
-            cmd6 = "sed -i '355 i echo \"guest:${VNC_VIEW_PW_HASH}:r\" >> $PASSWD_PATH' /dockerstartup/vnc_startup.sh"
-            os.popen(cmd6)
-        cmd7 = "docker restart "+containerId
-        os.popen(cmd7)
-        cmd8 = "exit"
-        os.popen(cmd8)
 
     stream2 = os.popen(createImgCmd(containerId, userId, port))
     imageId = stream2.read()[7:20]
@@ -157,6 +127,35 @@ def start():
     deContainerId = aes.decrypt(containerId)
     
     os.popen(startContainerCmd(deContainerId))
+    scope = True
+    # 비밀번호 바꾸기
+    # 23 : viewerpw
+    # 26 : vncuserpw
+    # 354 : user 
+    # 355 : viewer 비밀번호 저장 라인 
+    if scope==True : # 전체공개이면 
+        print("start")
+        control = True
+        cmd1 = "docker attche "+containerId
+        #print(os.popen(cmd1).read())
+        os.popen(cmd1)
+        cmd3 = "sed -i '13d' /dockerstartup/vnc_startup.sh"
+        #print(os.popen(cmd3).read())
+        os.system(cmd3)
+        cmd4 = "sed -i '13 i VNC_VIEW_ONLY_PW=\"guest\"' /dockerstartup/vnc_startup.sh"
+        os.popen(cmd4)
+        cmd5 = "sed -i '248d' /dockerstartup/vnc_startup.sh"
+        os.popen(cmd5)
+        if control==True : # 제어권 허락 
+            cmd6 = "sed -i '248 i echo \"guest:${VNC_VIEW_PW_HASH}:w\" >> $PASSWD_PATH' /dockerstartup/vnc_startup.sh"
+            os.popen(cmd6)
+        else : # 보기만 가능 
+            cmd6 = "sed -i '248 i echo \"guest:${VNC_VIEW_PW_HASH}:r\" >> $PASSWD_PATH' /dockerstartup/vnc_startup.sh"
+            os.popen(cmd6)
+        cmd7 = "docker restart "+containerId
+        os.popen(cmd7)
+        cmd8 = "exit"
+        os.popen(cmd8)
     
     response = {
             'port' : port,
