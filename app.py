@@ -31,7 +31,7 @@ def copyScriptToContainer(containerId) :
     return "docker cp /home/ubuntu/start.sh "+containerId+":/dockerstartup/"
 
 def changeVncScopeAndControl(containerId, scope, control, pwd) :
-    "docker exec -it --user root bash "+ containerId+" /dockerstartup/start.up "+scope +" "+control+" "+pwd 
+    return "docker exec -it --user root "+ containerId+" bash /dockerstartup/start.sh "+scope +" "+control+" "+pwd 
 
 # 이미지 관련 명령어 
 def createImgCmd(containerId, userId, port) : # registry.p2kcloud.com/base/userid:port 이름의 새로운 이미지 생성
@@ -77,6 +77,7 @@ def create():
     requestDTO = request.get_json() 
     print("[create requestDTO] ", requestDTO)
     userId, port, pwd = str(requestDTO['id']), str(requestDTO['port']), str(requestDTO['password'])
+    scope, control = str(requestDTO['scope']), str(requestDTO['control'])
     
     stream1 = os.popen(createContainerCmd(port, pwd, baseImageId))
     containerId = stream1.read()[:12]
@@ -91,6 +92,7 @@ def create():
     
     os.popen(copyScriptToContainer(containerId))
     
+    os.popen(changeVncScopeAndControl(containerId, scope, control, pwd))
     
     response = {
             'port': port,
@@ -140,7 +142,7 @@ def start():
     print("[start requestDTO] ", requestDTO)
     port, containerId = str(requestDTO['port']), str(requestDTO['containerId'])
     deContainerId = aes.decrypt(containerId)
-    pwd = str(requestDTO['pwd'])
+    pwd = str(requestDTO['password'])
     scope, control = str(requestDTO['scope']), str(requestDTO['control'])
 
     os.popen(startContainerCmd(deContainerId))
