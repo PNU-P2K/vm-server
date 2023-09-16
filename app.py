@@ -6,8 +6,8 @@ from Crypto.Cipher import AES
 
 app = Flask(__name__)
 
-#baseImageId = '04a27ba84906' # kasm 이미지 
-baseImageId = '1692c5f95a70e'
+baseImageId = '04a27ba84906' # kasm-1.14.0 이미지 
+#baseImageId = '1692c5f95a70e' # 로컬 이미지 
 
 BS = 16
 pad = (lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS).encode())
@@ -29,6 +29,9 @@ def deleteContainerCmd(containerId) :   # containerid로 컨테이너 삭제
 
 def copyScriptToContainer(containerId) :
     return "docker cp /home/ubuntu/start.sh "+containerId+":/dockerstartup/"
+
+def changeVncScopeAndControl(containerId, scope, control, pwd) :
+    "docker exec -it --user root bash "+ containerId+" /dockerstartup/start.up "+scope +" "+control+" "+pwd 
 
 # 이미지 관련 명령어 
 def createImgCmd(containerId, userId, port) : # registry.p2kcloud.com/base/userid:port 이름의 새로운 이미지 생성
@@ -116,6 +119,10 @@ def load() :
     newImageId = stream2.read()[7:20]
     enImageId = aes.encrypt(newImageId)
     
+    os.popen(startContainerCmd(newContainerId))
+    
+    os.popen(copyScriptToContainer(newContainerId))
+    
     response = {
         'containerId' : enContainerId,
         'imageId' : enImageId
@@ -136,11 +143,11 @@ def start():
     pwd = str(requestDTO['pwd'])
     scope, control = str(requestDTO['scope']), str(requestDTO['control'])
 
-    
     os.popen(startContainerCmd(deContainerId))
     
-    cmd1 = "docker exec -it --user root bash /dockerstartup/start.up " \
-        + scope + " " + control + " " + pwd 
+    time.sleep(1)
+    
+    os.popen(changeVncScopeAndControl(deContainerId, scope, control, pwd))
     
     response = {
             'port' : port,
