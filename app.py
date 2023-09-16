@@ -6,7 +6,8 @@ from Crypto.Cipher import AES
 
 app = Flask(__name__)
 
-baseImageId = '04a27ba84906' # kasm 이미지 
+#baseImageId = '04a27ba84906' # kasm 이미지 
+baseImageId = '1692c5f95a70e'
 
 BS = 16
 pad = (lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS).encode())
@@ -25,6 +26,9 @@ def stopContainerCmd(containerId) :     # containerid로 컨테이너 중지
 
 def deleteContainerCmd(containerId) :   # containerid로 컨테이너 삭제 
     return "docker rm "+containerId
+
+def copyScriptToContainer(containerId) :
+    return "docker cp /home/ubuntu/start.sh "+containerId+":/dockerstartup/"
 
 # 이미지 관련 명령어 
 def createImgCmd(containerId, userId, port) : # registry.p2kcloud.com/base/userid:port 이름의 새로운 이미지 생성
@@ -70,7 +74,6 @@ def create():
     requestDTO = request.get_json() 
     print("[create requestDTO] ", requestDTO)
     userId, port, pwd = str(requestDTO['id']), str(requestDTO['port']), str(requestDTO['password'])
-    #scope = str(requestDTO['scope'])
     
     stream1 = os.popen(createContainerCmd(port, pwd, baseImageId))
     containerId = stream1.read()[:12]
@@ -80,6 +83,11 @@ def create():
     stream2 = os.popen(createImgCmd(containerId, userId, port))
     imageId = stream2.read()[7:20]
     enImageId = aes.encrypt(imageId)  # imageId 암호화 
+    
+    os.popen(startContainerCmd(containerId))
+    
+    os.popen(copyScriptToContainer(containerId))
+    
     
     response = {
             'port': port,
@@ -125,37 +133,14 @@ def start():
     print("[start requestDTO] ", requestDTO)
     port, containerId = str(requestDTO['port']), str(requestDTO['containerId'])
     deContainerId = aes.decrypt(containerId)
+    pwd = str(requestDTO['pwd'])
+    scope, control = str(requestDTO['scope']), str(requestDTO['control'])
+
     
     os.popen(startContainerCmd(deContainerId))
-    scope = True
-    # 비밀번호 바꾸기
-    # 23 : viewerpw
-    # 26 : vncuserpw
-    # 354 : user 
-    # 355 : viewer 비밀번호 저장 라인 
-    if scope==True : # 전체공개이면 
-        print("start")
-        control = True
-        cmd1 = "docker attche "+containerId
-        #print(os.popen(cmd1).read())
-        os.popen(cmd1)
-        cmd3 = "sed -i '13d' /dockerstartup/vnc_startup.sh"
-        #print(os.popen(cmd3).read())
-        os.system(cmd3)
-        cmd4 = "sed -i '13 i VNC_VIEW_ONLY_PW=\"guest\"' /dockerstartup/vnc_startup.sh"
-        os.popen(cmd4)
-        cmd5 = "sed -i '248d' /dockerstartup/vnc_startup.sh"
-        os.popen(cmd5)
-        if control==True : # 제어권 허락 
-            cmd6 = "sed -i '248 i echo \"guest:${VNC_VIEW_PW_HASH}:w\" >> $PASSWD_PATH' /dockerstartup/vnc_startup.sh"
-            os.popen(cmd6)
-        else : # 보기만 가능 
-            cmd6 = "sed -i '248 i echo \"guest:${VNC_VIEW_PW_HASH}:r\" >> $PASSWD_PATH' /dockerstartup/vnc_startup.sh"
-            os.popen(cmd6)
-        cmd7 = "docker restart "+containerId
-        os.popen(cmd7)
-        cmd8 = "exit"
-        os.popen(cmd8)
+    
+    cmd1 = "docker exec -it --user root bash /dockerstartup/start.up " \
+        + scope + " " + control + " " + pwd 
     
     response = {
             'port' : port,
