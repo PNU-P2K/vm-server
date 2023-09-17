@@ -6,7 +6,8 @@ from Crypto.Cipher import AES
 
 app = Flask(__name__)
 
-baseImageId = '9e4131d0' # kasm window 이미지 
+baseImageId = '04a27ba84906' # kasm-1.14.0 이미지 
+#baseImageId = '1692c5f95a70e' # 로컬 이미지 
 
 BS = 16
 pad = (lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS).encode())
@@ -15,7 +16,7 @@ unpad = (lambda s: s[:-ord(s[len(s)-1:])])
 
 # 컨테이너 관련 명령어 
 def createContainerCmd(port, pwd, imageId) : # vm+port 이름의 컨테이너 생성 
-    return "docker create -p "+port+":6901 -e VNC_PW="+pwd+" --name vm"+port+" "+imageId
+    return "docker create --shm-size=512m -p "+port+":6901 -e VNC_PW="+pwd+" --name vm"+port+" "+imageId
 
 def startContainerCmd(containerId) :    # containerid로 컨테이너 실행
     return "docker start "+containerId
@@ -25,6 +26,12 @@ def stopContainerCmd(containerId) :     # containerid로 컨테이너 중지
 
 def deleteContainerCmd(containerId) :   # containerid로 컨테이너 삭제 
     return "docker rm "+containerId
+
+def copyScriptToContainer(containerId) :
+    return "docker cp /home/ubuntu/start.sh "+containerId+":/dockerstartup/"
+
+def changeVncScopeAndControl(containerId, scope, control, pwd) :
+    return "docker exec -it --user root "+ containerId+" bash /dockerstartup/start.sh "+scope +" "+control+" "+pwd 
 
 # 이미지 관련 명령어 
 def createImgCmd(containerId, userId, port) : # registry.p2kcloud.com/base/userid:port 이름의 새로운 이미지 생성
@@ -70,15 +77,22 @@ def create():
     requestDTO = request.get_json() 
     print("[create requestDTO] ", requestDTO)
     userId, port, pwd = str(requestDTO['id']), str(requestDTO['port']), str(requestDTO['password'])
+    scope, control = str(requestDTO['scope']), str(requestDTO['control'])
     
     stream1 = os.popen(createContainerCmd(port, pwd, baseImageId))
     containerId = stream1.read()[:12]
     time.sleep(5)
     enContainerId = aes.encrypt(containerId) # containerId 암호화 
-    
+
     stream2 = os.popen(createImgCmd(containerId, userId, port))
     imageId = stream2.read()[7:20]
     enImageId = aes.encrypt(imageId)  # imageId 암호화 
+    
+    os.popen(startContainerCmd(containerId))
+    
+    os.popen(copyScriptToContainer(containerId))
+    
+    os.popen(changeVncScopeAndControl(containerId, scope, control, pwd))
     
     response = {
             'port': port,
@@ -107,6 +121,10 @@ def load() :
     newImageId = stream2.read()[7:20]
     enImageId = aes.encrypt(newImageId)
     
+    os.popen(startContainerCmd(newContainerId))
+    
+    os.popen(copyScriptToContainer(newContainerId))
+    
     response = {
         'containerId' : enContainerId,
         'imageId' : enImageId
@@ -124,8 +142,14 @@ def start():
     print("[start requestDTO] ", requestDTO)
     port, containerId = str(requestDTO['port']), str(requestDTO['containerId'])
     deContainerId = aes.decrypt(containerId)
-    
+    pwd = str(requestDTO['password'])
+    scope, control = str(requestDTO['scope']), str(requestDTO['control'])
+
     os.popen(startContainerCmd(deContainerId))
+    
+    time.sleep(1)
+    
+    os.popen(changeVncScopeAndControl(deContainerId, scope, control, pwd))
     
     response = {
             'port' : port,
