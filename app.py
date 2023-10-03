@@ -92,8 +92,11 @@ def create():
     
     os.popen(copyScriptToContainer(containerId))
     
+    time.sleep(1)
+    
     #os.popen(changeVncScopeAndControl(containerId, scope, control, pwd))
-    os.popen("docker exec -it --user root "+containerId+" bash /dockerstartup/start.sh "+scope +" "+control+" "+pwd)
+    changeVncScopeAndControlCmd = "docker exec -it --user root "+containerId+" bash /dockerstartup/start.sh "+scope +" "+control+" "+pwd
+    os.popen(changeVncScopeAndControlCmd)
 
     
     response = {
@@ -113,6 +116,7 @@ def load() :
     requestDTO = request.get_json()
     print("[load requestDTO] ", requestDTO)
     userId, port, pwd, imageId = str(requestDTO['id']), str(requestDTO['port']), str(requestDTO['password']), str(requestDTO['key'])
+    scope, control = str(requestDTO['scope']), str(requestDTO['control'])
     deImageId = aes.decrypt(imageId)
     
     stream1 = os.popen(createContainerCmd(port, pwd, deImageId))
@@ -123,7 +127,7 @@ def load() :
             'imageId' : enImageId
         }
         
-        return jsonify(response), 500 
+        return jsonify(response), 404 
     
     newContainerId = stream1.read()[:12]
     enContainerId = aes.encrypt(newContainerId)
@@ -136,7 +140,10 @@ def load() :
     
     os.popen(copyScriptToContainer(newContainerId))
     
-    os.popen("docker exec -it --user root "+newContainerId+" bash /dockerstartup/start.sh "+scope +" "+control+" "+pwd)
+    time.sleep(1)
+    
+    changeVncScopeAndControlCmd = "docker exec -it --user root "+newContainerId+" bash /dockerstartup/start.sh "+scope +" "+control+" "+pwd
+    os.popen(changeVncScopeAndControlCmd)
 
     
     response = {
@@ -164,8 +171,8 @@ def start():
     time.sleep(1)
     
     #os.popen(changeVncScopeAndControl(deContainerId, scope, control, pwd))
-    os.popen("docker exec -it --user root "+deContainerId+" bash /dockerstartup/start.sh "+scope +" "+control+" "+pwd 
-)
+    changeVncScopeAndControlCmd = "docker exec -it --user root "+deContainerId+" bash /dockerstartup/start.sh "+scope +" "+control+" "+pwd
+    os.popen(changeVncScopeAndControlCmd)
     
     response = {
             'port' : port,
@@ -173,7 +180,6 @@ def start():
         }
     
     return jsonify(response), 200
-
 
 
 # spring 서버에서 컨테이너 중지 요청이 왔을 때, 컨테이너 중지
@@ -227,7 +233,6 @@ def save() :
         }
     
     return jsonify(response), 200
-
 
 
 # spring 서버에서 컨테이너 삭제 요청이 왔을 때, 컨테이너, 이미지 삭제  
