@@ -92,7 +92,9 @@ def create():
     
     os.popen(copyScriptToContainer(containerId))
     
-    os.popen(changeVncScopeAndControl(containerId, scope, control, pwd))
+    #os.popen(changeVncScopeAndControl(containerId, scope, control, pwd))
+    os.popen("docker exec -it --user root "+containerId+" bash /dockerstartup/start.sh "+scope +" "+control+" "+pwd)
+
     
     response = {
             'port': port,
@@ -114,6 +116,15 @@ def load() :
     deImageId = aes.decrypt(imageId)
     
     stream1 = os.popen(createContainerCmd(port, pwd, deImageId))
+    # 해당 이미지 id가 없을 때
+    if (stream1.read()[:6] == 'Unable') :
+        response = {
+            'containerId' : 'null',
+            'imageId' : enImageId
+        }
+        
+        return jsonify(response), 500 
+    
     newContainerId = stream1.read()[:12]
     enContainerId = aes.encrypt(newContainerId)
     
@@ -124,6 +135,9 @@ def load() :
     os.popen(startContainerCmd(newContainerId))
     
     os.popen(copyScriptToContainer(newContainerId))
+    
+    os.popen("docker exec -it --user root "+newContainerId+" bash /dockerstartup/start.sh "+scope +" "+control+" "+pwd)
+
     
     response = {
         'containerId' : enContainerId,
@@ -149,7 +163,9 @@ def start():
     
     time.sleep(1)
     
-    os.popen(changeVncScopeAndControl(deContainerId, scope, control, pwd))
+    #os.popen(changeVncScopeAndControl(deContainerId, scope, control, pwd))
+    os.popen("docker exec -it --user root "+deContainerId+" bash /dockerstartup/start.sh "+scope +" "+control+" "+pwd 
+)
     
     response = {
             'port' : port,
