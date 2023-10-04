@@ -94,7 +94,8 @@ def deleteServicePodCmd(serviceName):
 
 # 컨테이너 관련 명령어
 def createContainerCmd(port, pwd, imageId) : # vm+port 이름의 컨테이너 생성
-    return "docker create --shm-size=512m -p "+port+":6901 -e VNC_PW="+pwd+" --name vm"+port+" "+imageId
+    vmname = "vm"+port
+    return "docker create --shm-size=512m -p "+port+":6901 -e VNC_PW="+pwd+" --name "+vmname+" "+imageId
 
 def startContainerCmd(containerId) :    # containerid로 컨테이너 실행 
     return "docker start "+containerId
@@ -149,8 +150,8 @@ aes = AESCipher(key)
 
 
 # spring 서버에서 컨테이너 생성 요청이 왔을 때, base 이미지로 컨테이너 생성하고 이미지 저장
-@app.route('/create', methods=['POST'])
-def create():
+@app.route('/create', methods=['POST']) 
+def create(): 
 
     requestDTO = request.get_json()
     print("[create requestDTO] ", requestDTO)
@@ -165,9 +166,9 @@ def create():
     stream2 = os.popen(createImgCmd(containerId, userId, port))
     imageId = stream2.read()[7:20]
     enImageId = aes.encrypt(imageId)  # imageId 암호화
-    vmName = str(requestDTO['vmname'])
-    scriptPath = "/dockerstartup/start.sh"
-    nodePort = str(requestDTO['nodePort'])
+    vmName = "vm"+port
+    scriptPath = "/dockerstartup/start.sh" 
+    nodePort = str(requestDTO['nodePort']) 
 
     os.popen(startContainerCmd(containerId))
 
@@ -220,7 +221,7 @@ def load() :
     enImageId = aes.encrypt(newImageId)
 
     scope, control = str(requestDTO['scope']), str(requestDTO['control'])
-    vmName = str(requestDTO['vmname'])
+    vmName = "vm"+port
     scriptPath = "/dockerstartup/start.sh"
     nodePort = str(requestDTO['nodePort'])
 
@@ -263,7 +264,7 @@ def start():
     pwd = str(requestDTO['password'])
     scope, control = str(requestDTO['scope']), str(requestDTO['control'])
 
-    vmName = str(requestDTO['vmname'])
+    vmName = "vm"+port
 
     #os.popen(startContainerCmd(deContainerId)) Pod를 생성하면 자동으로 container가 실행되기 때문에 사용 안 함 
 
