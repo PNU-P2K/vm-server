@@ -306,7 +306,7 @@ def stop():
     print("[stop requestDTO] ", requestDTO)
     port, containerId = str(requestDTO['port']), str(requestDTO['containerId'])
     deContainerId = aes.decrypt(containerId)
-    vmName = str(requestDTO['vmname'])
+    vmName = "vm"+port
 
     # os.popen(stopContainerCmd(deContainerId))
 
