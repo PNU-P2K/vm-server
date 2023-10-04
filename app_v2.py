@@ -80,7 +80,7 @@ def generateServiceYaml(serviceName, servicePort, nodePort):
 
 # Pod yaml로 생성하기 
 def applyPodCmd(yamlFile):
-    return "kubectl apply -f" + yamlFile
+    return "kubectl apply -f " + yamlFile
 
 # deployment Pod 지우기  
 def deleteDeployPodCmd(deploymentName): 
