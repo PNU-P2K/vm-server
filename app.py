@@ -92,7 +92,12 @@ def create():
     
     os.popen(copyScriptToContainer(containerId))
     
-    os.popen(changeVncScopeAndControl(containerId, scope, control, pwd))
+    time.sleep(1)
+    
+    #os.popen(changeVncScopeAndControl(containerId, scope, control, pwd))
+    changeVncScopeAndControlCmd = "docker exec -it --user root "+containerId+" bash /dockerstartup/start.sh "+scope +" "+control+" "+pwd
+    os.popen(changeVncScopeAndControlCmd)
+
     
     response = {
             'port': port,
@@ -111,9 +116,19 @@ def load() :
     requestDTO = request.get_json()
     print("[load requestDTO] ", requestDTO)
     userId, port, pwd, imageId = str(requestDTO['id']), str(requestDTO['port']), str(requestDTO['password']), str(requestDTO['key'])
+    scope, control = str(requestDTO['scope']), str(requestDTO['control'])
     deImageId = aes.decrypt(imageId)
     
     stream1 = os.popen(createContainerCmd(port, pwd, deImageId))
+    # 해당 이미지 id가 없을 때
+    if (stream1.read()[:6] == 'Unable') :
+        response = {
+            'containerId' : 'null',
+            'imageId' : enImageId
+        }
+        
+        return jsonify(response), 404 
+    
     newContainerId = stream1.read()[:12]
     enContainerId = aes.encrypt(newContainerId)
     
@@ -124,6 +139,12 @@ def load() :
     os.popen(startContainerCmd(newContainerId))
     
     os.popen(copyScriptToContainer(newContainerId))
+    
+    time.sleep(1)
+    
+    changeVncScopeAndControlCmd = "docker exec -it --user root "+newContainerId+" bash /dockerstartup/start.sh "+scope +" "+control+" "+pwd
+    os.popen(changeVncScopeAndControlCmd)
+
     
     response = {
         'containerId' : enContainerId,
@@ -149,7 +170,9 @@ def start():
     
     time.sleep(1)
     
-    os.popen(changeVncScopeAndControl(deContainerId, scope, control, pwd))
+    #os.popen(changeVncScopeAndControl(deContainerId, scope, control, pwd))
+    changeVncScopeAndControlCmd = "docker exec -it --user root "+deContainerId+" bash /dockerstartup/start.sh "+scope +" "+control+" "+pwd
+    os.popen(changeVncScopeAndControlCmd)
     
     response = {
             'port' : port,
@@ -157,7 +180,6 @@ def start():
         }
     
     return jsonify(response), 200
-
 
 
 # spring 서버에서 컨테이너 중지 요청이 왔을 때, 컨테이너 중지
@@ -211,7 +233,6 @@ def save() :
         }
     
     return jsonify(response), 200
-
 
 
 # spring 서버에서 컨테이너 삭제 요청이 왔을 때, 컨테이너, 이미지 삭제  
