@@ -174,6 +174,8 @@ def create():
 
     os.popen(copyScriptToContainer(containerId))
 
+    os.popen(stopContainerCmd(containerId))
+
     #os.popen(changeVncScopeAndControl(containerId, scope, control, pwd))
     #cmd1= "docker exec -it --user root "+containerId+" bash /dockerstartup/start.sh "+scope +" "+control+" "+pwd
     #os.popen(cmd1)
@@ -228,6 +230,8 @@ def load() :
     os.popen(startContainerCmd(newContainerId))
 
     os.popen(copyScriptToContainer(newContainerId))
+
+    os.popen(stopContainerCmd(newContainerId))
 
     # Depolyment yaml 파일 생성 
     deploymentPodYaml = generateDeploymentPodYaml(vmName, vmName, imageId, port, scriptPath, scope, control, pwd)
