@@ -15,7 +15,7 @@ pad = (lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS).encode())
 unpad = (lambda s: s[:-ord(s[len(s)-1:])])
 
 # deployment pod 만드는 함수
-def generateDeploymentPodYaml(deploymentName, containerName, imagePath, scriptPath, scope, control, pwd) : 
+def generateDeploymentPodYaml(deploymentName, containerName, imageName, scriptPath, scope, control, pwd) : 
     deploymentDefinition = {
         "apiVersion": "apps/v1",
         "kind": "Deployment",
@@ -37,8 +37,8 @@ def generateDeploymentPodYaml(deploymentName, containerName, imagePath, scriptPa
                     "containers": [ 
                         {
                             "name": containerName, 
-                            "image": imagePath, 
-                            "ports": [{"containerPort": 6901}], # container 포트는 이미지 받을 때부터 열려있었던 포트인 6901로 접속해야 가능  
+                            "image": imageName, 
+                            "ports": [{"containerPort": 6901}], # container 포트는 이미지 받을 때부터 열려있었던 포트인 6901로 접속해야 가능 
                         } 
                     ], 
                     "imagePullSecrets": [{"name": "harbor"}] # harbor라는 이름의 kubeconfig.yaml 파일 
@@ -79,16 +79,20 @@ def generateServiceYaml(serviceName, servicePort, nodePort):
     return serviceYaml
 
 # Pod yaml로 생성하기 
-def applyPodCmd(yamlFile):
-    return "kubectl apply -f " + yamlFile
+def applyPodCmd(yamlFilePath):
+    return "kubectl apply -f " + yamlFilePath + " --kubeconfig /root/kubeconfig.yml"
 
 # deployment Pod 지우기  
 def deleteDeployPodCmd(deploymentName): 
-    return "kubectl delete deployment" + deploymentName 
+    return "kubectl delete deployment " + deploymentName + " --kubeconfig /root/kubeconfig.yml"
 
 # service Pod 지우기  
 def deleteServicePodCmd(serviceName): 
-    return "kubectl delete service" + serviceName 
+    return "kubectl delete service " + serviceName + " --kubeconfig /root/kubeconfig.yml"
+
+# yaml 파일 지우기 
+def deleteYamlFile(yamlFilePath):
+    return "rm /home/yaml/ " + yamlFilePath
 
 # 컨테이너 관련 명령어
 def createContainerCmd(port, pwd, imageId) : # vm+port 이름의 컨테이너 생성
@@ -170,14 +174,8 @@ def create():
     imagePath = str(requestDTO['imagePath'])
 
     os.popen(startContainerCmd(containerId))
-
     os.popen(copyScriptToContainer(containerId))
-
     os.popen(stopContainerCmd(containerId))
-
-    #os.popen(changeVncScopeAndControl(containerId, scope, control, pwd))
-    #cmd1= "docker exec -it --user root "+containerId+" bash /dockerstartup/start.sh "+scope +" "+control+" "+pwd
-    #os.popen(cmd1)
 
     # Depolyment yaml 파일 생성 
     deploymentPodYaml = generateDeploymentPodYaml(vmName, vmName, imagePath, scriptPath, scope, control, pwd)
@@ -193,6 +191,9 @@ def create():
 
     print(deploymentPodYaml)
     print(servicePodYaml)
+
+    os.popen(applyPodCmd(deploymentFilePath))
+    os.popen(applyPodCmd(serviceFilePath))
 
     response = {
             'port': port,
@@ -228,9 +229,7 @@ def load() :
     imagePath = str(requestDTO['imagePath'])
 
     os.popen(startContainerCmd(newContainerId))
-
     os.popen(copyScriptToContainer(newContainerId))
-
     os.popen(stopContainerCmd(newContainerId))
 
     # Depolyment yaml 파일 생성 
@@ -270,19 +269,14 @@ def start():
 
     vmName = "vm"+port
 
-    #os.popen(startContainerCmd(deContainerId)) Pod를 생성하면 자동으로 container가 실행되기 때문에 사용 안 함 
-
     deploymentFilePath = "/home/yaml/"+vmName+"Deployment.yaml"
     serviceFilePath = "/home/yaml/"+vmName+"Service.yaml"
 
-    applyPodCmd(deploymentFilePath)
-    applyPodCmd(serviceFilePath)
+    print(applyPodCmd(deploymentFilePath))
+    print(applyPodCmd(serviceFilePath))
 
-    time.sleep(1)
-
-    #os.popen(changeVncScopeAndControl(deContainerId, scope, control, pwd))
-    #cmd1= "docker exec -it --user root "+containerId+" bash /dockerstartup/start.sh "+scope +" "+control+" "+pwd
-    #os.popen(cmd1)
+    os.popen(applyPodCmd(deploymentFilePath))
+    os.popen(applyPodCmd(serviceFilePath))
 
     response = {
             'port' : port,
@@ -303,10 +297,11 @@ def stop():
     deContainerId = aes.decrypt(containerId)
     vmName = "vm"+port
 
-    # os.popen(stopContainerCmd(deContainerId))
+    print(deleteDeployPodCmd(vmName))
+    print(deleteServicePodCmd(vmName))
 
-    deleteDeployPodCmd(vmName)
-    deleteServicePodCmd(vmName)
+    os.popen(deleteDeployPodCmd(vmName))
+    os.popen(deleteServicePodCmd(vmName))
 
     response = {
             'port' : port,
@@ -363,6 +358,15 @@ def delete():
 
     os.popen(deleteContainerCmd(deContainerId))
     os.popen(deleteImgCmd(deImageId))
+
+    vmName = "vm"+port
+
+    deploymentFilePath = "/home/yaml/"+vmName+"Deployment.yaml"
+    serviceFilePath = "/home/yaml/"+vmName+"Service.yaml"
+
+    os.popen(deleteYamlFile(deploymentFilePath))
+    os.popen(deleteYamlFile(serviceFilePath))
+
 
     response = {
             'port' : port,
