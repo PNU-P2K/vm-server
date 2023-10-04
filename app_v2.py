@@ -277,7 +277,7 @@ def start():
         loadedDeployYaml = yaml.load(deploymentYamlFile, Loader=yaml.FullLoader)
 
     serviceFilePath = "/home/yaml/"+vmName+"Service.yaml"
-    with open(serviceFilePath, 'w') as serviceYamlFile:
+    with open(serviceFilePath, 'r') as serviceYamlFile:
         loadedServiceYaml = yaml.load(serviceYamlFile, Loader=yaml.FullLoader)
 
     applyPodCmd(loadedDeployYaml)
