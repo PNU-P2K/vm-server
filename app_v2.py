@@ -15,7 +15,7 @@ pad = (lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS).encode())
 unpad = (lambda s: s[:-ord(s[len(s)-1:])])
 
 # deployment pod 만드는 함수
-def generateDeploymentPodYaml(deploymentName, containerName, imageName, containerPort, scriptPath, scope, control, pwd) : 
+def generateDeploymentPodYaml(deploymentName, containerName, imagePath, scriptPath, scope, control, pwd) : 
     deploymentDefinition = {
         "apiVersion": "apps/v1",
         "kind": "Deployment",
@@ -37,10 +37,8 @@ def generateDeploymentPodYaml(deploymentName, containerName, imageName, containe
                     "containers": [ 
                         {
                             "name": containerName, 
-                            "image": imageName, 
-                            "ports": [{"containerPort": containerPort}],
-                            "command": [scriptPath], # script 경로 (docker exec ~~)
-                            "args": [scope, control, pwd] # 함께 전달되는 인자 
+                            "image": imagePath, 
+                            "ports": [{"containerPort": 6901}], # container 포트는 이미지 받을 때부터 열려있었던 포트인 6901로 접속해야 가능  
                         } 
                     ], 
                     "imagePullSecrets": [{"name": "harbor"}] # harbor라는 이름의 kubeconfig.yaml 파일 
@@ -56,7 +54,7 @@ def generateDeploymentPodYaml(deploymentName, containerName, imageName, containe
 
 
 # service pod를 만드는 함수 (pod를 외부로 노출하기 위함)
-def generateServiceYaml(serviceName, servicePort, targetPort, nodePort):
+def generateServiceYaml(serviceName, servicePort, nodePort):
     # Service의 기본 구조를 딕셔너리로 정의합니다.
     serviceDefinition = {
         "apiVersion": "v1",
@@ -67,9 +65,9 @@ def generateServiceYaml(serviceName, servicePort, targetPort, nodePort):
             "selector": {"app": "webdesktop"},
             "ports": [
                 {
-                    "port": servicePort, 
-                    "targetPort": targetPort, 
-                    "nodePort": nodePort # node_port는 30000~32768 
+                    "port": int(servicePort), 
+                    "targetPort": 6901, # deployment의 containerPort와 일치해야 함 
+                    "nodePort": int(nodePort) # node_port는 30000~32768 
                 }
             ]
         }
@@ -169,6 +167,7 @@ def create():
     vmName = "vm"+port
     scriptPath = "/dockerstartup/start.sh" 
     nodePort = str(requestDTO['nodePort']) 
+    imagePath = str(requestDTO['imagePath'])
 
     os.popen(startContainerCmd(containerId))
 
@@ -181,13 +180,13 @@ def create():
     #os.popen(cmd1)
 
     # Depolyment yaml 파일 생성 
-    deploymentPodYaml = generateDeploymentPodYaml(vmName, vmName, imageId, port, scriptPath, scope, control, pwd)
+    deploymentPodYaml = generateDeploymentPodYaml(vmName, vmName, imagePath, scriptPath, scope, control, pwd)
     deploymentFilePath = "/home/yaml/"+vmName+"Deployment.yaml"
     with open(deploymentFilePath, 'w') as deploymentYamlFile:
         deploymentYamlFile.write(deploymentPodYaml) 
 
     # Service yaml 파일 생성 
-    servicePodYaml = generateServiceYaml(vmName, port, port, nodePort)
+    servicePodYaml = generateServiceYaml(vmName, port, nodePort)
     serviceFilePath = "/home/yaml/"+vmName+"Service.yaml"
     with open(serviceFilePath, 'w') as serviceYamlFile:
         serviceYamlFile.write(servicePodYaml)
@@ -226,6 +225,7 @@ def load() :
     vmName = "vm"+port
     scriptPath = "/dockerstartup/start.sh"
     nodePort = str(requestDTO['nodePort'])
+    imagePath = str(requestDTO['imagePath'])
 
     os.popen(startContainerCmd(newContainerId))
 
@@ -234,13 +234,13 @@ def load() :
     os.popen(stopContainerCmd(newContainerId))
 
     # Depolyment yaml 파일 생성 
-    deploymentPodYaml = generateDeploymentPodYaml(vmName, vmName, imageId, port, scriptPath, scope, control, pwd)
+    deploymentPodYaml = generateDeploymentPodYaml(vmName, vmName, imagePath, scriptPath, scope, control, pwd)
     deploymentFilePath = "/home/yaml/"+vmName+"Deployment.yaml"
     with open(deploymentFilePath, 'w') as deploymentYamlFile:
         deploymentYamlFile.write(deploymentPodYaml) 
 
     # Service yaml 파일 생성 
-    servicePodYaml = generateServiceYaml(vmName, port, port, nodePort)
+    servicePodYaml = generateServiceYaml(vmName, port, nodePort)
     serviceFilePath = "/home/yaml/"+vmName+"Service.yaml"
     with open(serviceFilePath, 'w') as serviceYamlFile:
         serviceYamlFile.write(servicePodYaml)
@@ -273,15 +273,10 @@ def start():
     #os.popen(startContainerCmd(deContainerId)) Pod를 생성하면 자동으로 container가 실행되기 때문에 사용 안 함 
 
     deploymentFilePath = "/home/yaml/"+vmName+"Deployment.yaml"
-    with open(deploymentFilePath, 'r') as deploymentYamlFile:
-        loadedDeployYaml = yaml.load(deploymentYamlFile, Loader=yaml.FullLoader)
-
     serviceFilePath = "/home/yaml/"+vmName+"Service.yaml"
-    with open(serviceFilePath, 'r') as serviceYamlFile:
-        loadedServiceYaml = yaml.load(serviceYamlFile, Loader=yaml.FullLoader)
 
-    applyPodCmd(loadedDeployYaml)
-    applyPodCmd(loadedServiceYaml)
+    applyPodCmd(deploymentFilePath)
+    applyPodCmd(serviceFilePath)
 
     time.sleep(1)
 
