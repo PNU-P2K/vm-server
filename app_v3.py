@@ -98,6 +98,8 @@ def extractNodesInfo():
         nodeName, nodeExternalIp = node[0], node[6] 
         extractNodeInfos[nodeName] = nodeExternalIp
 
+    print("extractN: ", extractNodeInfos)
+
     return extractNodeInfos
 
 # pod의 external ip를 알기 위한 함수 
@@ -240,7 +242,7 @@ def create():
     os.popen(applyPodCmd(serviceFilePath))
 
     nodeList = extractNodesInfo()
-    externalNodeIp = extractPodInfos(nodeList)
+    externalNodeIp = extractNodeIpOfPod(nodeList)
 
     print("nodes: ", nodeList)
     print("externalIp: ", externalNodeIp)
