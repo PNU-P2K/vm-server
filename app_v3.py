@@ -3,8 +3,7 @@ import os, time
 import base64
 import hashlib
 import yaml
-import subprocess
-import re
+import threading
 from Crypto.Cipher import AES
 
 app = Flask(__name__)
@@ -18,6 +17,7 @@ unpad = (lambda s: s[:-ord(s[len(s)-1:])])
 
 extractNodeInfos = dict()
 extractPodInfos = dict()
+extractNodeCPUs = dict()
 
 # deployment pod 만드는 함수
 def generateDeploymentPodYaml(deploymentName, containerName, imageName, scriptPath, scope, control, pwd) : 
@@ -84,7 +84,7 @@ def generateServiceYaml(serviceName, servicePort, nodePort):
     return serviceYaml
 
 # node의 이름과 ip를 추출하기 위한 용도 
-def extractNodesInfo():
+def extractNodeInfo():
     result = os.popen("kubectl get nodes -o wide --kubeconfig /root/kubeconfig.yml").read()
 
     print("result:", result)
@@ -96,14 +96,14 @@ def extractNodesInfo():
     for nodeInfo in nodeInfoList: 
         node = nodeInfo.split() 
         nodeName, nodeExternalIp = node[0], node[6] 
-        extractNodeInfos[nodeName] = nodeExternalIp
+        extractNodeInfos[nodeName] = nodeExternalIp 
 
     print("extractN: ", extractNodeInfos)
 
     return extractNodeInfos
 
 # pod의 external ip를 알기 위한 함수 
-def extractNodeIpOfPod(nodeList):
+def extractPodInfo():
 
     result = os.popen("kubectl get pods -o wide --kubeconfig /root/kubeconfig.yml").read()
 
@@ -118,13 +118,73 @@ def extractNodeIpOfPod(nodeList):
         podName, nodeName = pod[0], pod[6] 
         extractPodInfos[podName] = nodeName
 
-    print("extractP: ", extractPodInfos)
+    return extractPodInfos
 
-    for podName, nodeName in extractPodInfos.items():
+# pod의 external ip를 알기 위한 함수 
+def extractNodeIpOfPod(nodeList):
+
+    podList = extractPodInfo()
+
+    for _, nodeName in podList.items():
         if nodeName in nodeList:
             return extractNodeInfos[nodeName]
 
     return "Not Found"
+
+# node들의 cpu 사용량 추출하기 
+def extractNodeCPU():
+
+    result = os.popen("kubectl top nodes --kubeconfig /root/kubeconfig.yml").read()
+
+    print("result:", result) 
+
+    nodeUseInfoList = result.split('\n')[1:-1]
+
+    for nodeUseInfo in nodeUseInfoList: 
+        node = nodeUseInfo.split() 
+        nodeName, CpuUse = node[0], node[2] 
+        extractNodeCPUs[nodeName] = CpuUse
+
+    return extractNodeCPUs
+
+# 30초 동안 cpu 사용량이 최대, 최소인 노드들 추출 
+def findMinMaxCPUNodes(nodeCpuList):
+
+    minCpuUseNode = ''
+    minCpuUse = float('inf')
+    maxCpuUseNode = ''
+    maxCpuUse = 0
+
+    for _ in range(30): # 총 30초 
+        for nodeName, CpuUse in nodeCpuList.items():
+            temp = float(CpuUse[:-1])
+            if temp <= 50: # 50퍼 이하만 
+                if temp < minCpuUse:
+                    minCpuUse = temp 
+                    minCpuUseNode = nodeName
+                if temp > maxCpuUse:
+                    maxCpuUse = temp 
+                    maxCpuUseNode = nodeName
+
+    time.sleep(1) # 1초씩 
+
+    return minCpuUseNode, maxCpuUseNode
+
+def migrationMintoMax(minNode):
+
+    os.popen("kubectl cordon " + minNode + " --kubeconfig /root/kubeconfig.yml") # 스케줄 불가로 만들기 - 더이상 pod 할당 안되게
+    
+    result = os.popen("kubectl get nodes " + minNode + " --kubeconfig /root/kubeconfig.yml").read()
+
+    print("result:", result) 
+
+    nodeInfo = result.split('\n')[1:-1]
+    status = nodeInfo[0].split()[1]
+    
+    if "SchedulingDisabled" in status: 
+        os.popen("kubectl drain " + minNode + " --ignore-daemonsets --kubeconfig /root/kubeconfig.yml")
+
+    return 
 
 # Pod yaml로 생성하기 
 def applyPodCmd(yamlFilePath):
@@ -243,7 +303,7 @@ def create():
     os.popen(applyPodCmd(deploymentFilePath))
     os.popen(applyPodCmd(serviceFilePath))
 
-    nodeList = extractNodesInfo()
+    nodeList = extractNodeInfo()
     externalNodeIp = extractNodeIpOfPod(nodeList)
 
     print("nodes: ", nodeList)
@@ -430,6 +490,21 @@ def delete():
 
     return jsonify(response), 200
 
+def backgroundTask():
+
+    while True:
+        nodes = extractNodeInfo()
+        if len(nodes) >= 2:
+            minCpuUseNode, maxCpuUseNode = findMinMaxCPUNodes(nodes)
+            if minCpuUseNode <= 20: # cpu의 사용량이 가장 낮은 node의 사용량이 20보다 작을 때만 migration 
+                migrationMintoMax(minCpuUseNode) 
+
+        time.sleep(3600) # 1시간에 1번씩 점검 
 
 if __name__ == '__main__':
+
+    background_thread = threading.Thread(target=backgroundTask)
+    background_thread.daemon = True
+    background_thread.start()
+
     app.run('0.0.0.0', port=5000, debug=True)
