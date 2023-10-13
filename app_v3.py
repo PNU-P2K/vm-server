@@ -87,7 +87,11 @@ def generateServiceYaml(serviceName, servicePort, nodePort):
 def extractNodesInfo():
     result = os.popen("kubectl get nodes -o wide --kubeconfig /root/kubeconfig.yml").read()
 
+    print("result:", result)
+
     nodeInfoList = result.split('\n')[1:]
+
+    print("nodeInfo: ", nodeInfoList)
 
     for nodeInfo in nodeInfoList: 
         node = nodeInfo.split('\t') 
@@ -101,9 +105,13 @@ def extractNodeIpOfPod(nodeList):
 
     result = os.popen("kubectl get pods -o wide --kubeconfig /root/kubeconfig.yml").read()
 
-    nodeInfoList = result.split('\n')[1:]
+    print("result:", result) 
 
-    for podInfo in nodeInfoList: 
+    podInfoList = result.split('\n')[1:]
+
+    print("podInfo: ", podInfoList)
+
+    for podInfo in podInfoList: 
         pod = podInfo.split('\t') 
         podName, nodeName = pod[0], pod[6] 
         extractPodInfos[podName] = nodeName
