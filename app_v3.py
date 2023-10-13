@@ -118,9 +118,11 @@ def extractNodeIpOfPod(nodeList):
         podName, nodeName = pod[0], pod[6] 
         extractPodInfos[podName] = nodeName
 
+    print("extractP: ", extractPodInfos)
+
     for podName, nodeName in extractNodeInfos.items():
         if nodeName in nodeList:
-            return nodeList[nodeName]
+            return extractPodInfos[nodeName]
 
     return "Not Found"
 
