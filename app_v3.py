@@ -94,7 +94,7 @@ def extractNodesInfo():
     print("nodeInfo: ", nodeInfoList)
 
     for nodeInfo in nodeInfoList: 
-        node = nodeInfo.split('\t') 
+        node = nodeInfo.split() 
         nodeName, nodeExternalIp = node[0], node[6] 
         extractNodeInfos[nodeName] = nodeExternalIp
 
@@ -112,7 +112,7 @@ def extractNodeIpOfPod(nodeList):
     print("podInfo: ", podInfoList)
 
     for podInfo in podInfoList: 
-        pod = podInfo.split('\t') 
+        pod = podInfo.split() 
         podName, nodeName = pod[0], pod[6] 
         extractPodInfos[podName] = nodeName
 
