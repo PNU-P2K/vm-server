@@ -183,8 +183,8 @@ def migrationMintoMax(minNode):
     
     if "SchedulingDisabled" in status: 
         os.popen("kubectl drain " + minNode + " --ignore-daemonsets --kubeconfig /root/kubeconfig.yml")
+        os.popen("kubectl delete " + minNode + " --kubeconfig /root/kubeconfig.yml")
 
-    return 
 
 # Pod yaml로 생성하기 
 def applyPodCmd(yamlFilePath):
@@ -500,6 +500,7 @@ def checkNodes():
                 migrationMintoMax(minCpuUseNode) 
 
         time.sleep(3600) # 1시간에 1번씩 점검 
+        print(os.popen("kubectl get nodes --kubeconfig /root/kubeconfig.yml").read())
 
 if __name__ == '__main__':
 
