@@ -253,7 +253,7 @@ def create():
             'port': port,
             'containerId' : enContainerId,
             'imageId' : enImageId,
-            'externalIp': externalNodeIp
+            'externalNodeIp': externalNodeIp
         }
 
     return jsonify(response), 200
