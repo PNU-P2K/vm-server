@@ -493,7 +493,7 @@ def delete():
 def checkNodes():
 
     while True:
-        nodes = extractNodeInfo()
+        nodes = extractNodeCPU()
         if len(nodes) >= 2:
             minCpuUseNode, maxCpuUseNode = findMinMaxCPUNodes(nodes)
             if minCpuUseNode <= 20: # cpu의 사용량이 가장 낮은 node의 사용량이 20보다 작을 때만 migration 
@@ -504,5 +504,5 @@ def checkNodes():
 if __name__ == '__main__':
 
     checkNodes()
-    
+
     app.run('0.0.0.0', port=5000, debug=True)
