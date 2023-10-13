@@ -490,7 +490,7 @@ def delete():
 
     return jsonify(response), 200
 
-def backgroundTask():
+def checkNodes():
 
     while True:
         nodes = extractNodeInfo()
@@ -503,8 +503,6 @@ def backgroundTask():
 
 if __name__ == '__main__':
 
-    background_thread = threading.Thread(target=backgroundTask)
-    background_thread.daemon = True
-    background_thread.start()
-
+    checkNodes()
+    
     app.run('0.0.0.0', port=5000, debug=True)
