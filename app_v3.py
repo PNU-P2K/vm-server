@@ -184,7 +184,7 @@ def migrationMintoMax(minNode):
 
     os.popen("kubectl cordon " + minNode + " --kubeconfig /root/kubeconfig.yml") # 스케줄 불가로 만들기 - 더이상 pod 할당 안되게
     
-    time.sleep(300) # 5분 대기 
+    time.sleep(60) # 1분 대기 
 
     result = os.popen("kubectl get nodes " + minNode + " --kubeconfig /root/kubeconfig.yml").read()
 
