@@ -89,7 +89,7 @@ def extractNodesInfo():
 
     print("result:", result)
 
-    nodeInfoList = result.split('\n')[1:]
+    nodeInfoList = result.split('\n')[1:-1]
 
     print("nodeInfo: ", nodeInfoList)
 
@@ -107,7 +107,7 @@ def extractNodeIpOfPod(nodeList):
 
     print("result:", result) 
 
-    podInfoList = result.split('\n')[1:]
+    podInfoList = result.split('\n')[1:-1]
 
     print("podInfo: ", podInfoList)
 
