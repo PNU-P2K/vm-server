@@ -132,7 +132,7 @@ def extractNodeIpOfPod(nodeList):
     return "Not Found"
 
 # node들의 cpu 사용량 추출하기 
-def extractNodeCPU():
+def extractNodeCPUAndMemory():
 
     result = os.popen("kubectl top nodes --kubeconfig /root/kubeconfig.yml").read()
 
@@ -142,8 +142,8 @@ def extractNodeCPU():
 
     for nodeUseInfo in nodeUseInfoList: 
         node = nodeUseInfo.split() 
-        nodeName, CpuUse = node[0], node[2] 
-        extractNodeCPUs[nodeName] = CpuUse
+        nodeName, cpuUse, memoryUse = node[0], node[2], node[4]
+        extractNodeCPUs[nodeName] = [cpuUse, memoryUse]
 
     return extractNodeCPUs
 
@@ -152,19 +152,29 @@ def findMinMaxCPUNodes(nodeCpuList):
 
     minCpuUseNode = ''
     minCpuUse = float('inf')
+    minMemUse = 0 # 최소량 cpu의 memory 사용량 
     maxCpuUseNode = ''
     maxCpuUse = 0
+    maxMemUse = 0 # 최대량 cpu의 memory 사용량 
 
     for _ in range(30): # 총 30초 
-        for nodeName, CpuUse in nodeCpuList.items():
-            temp = float(CpuUse[:-1])
+        for nodeName, resourceUse in nodeCpuList.items():
+            temp = float(resourceUse[0][:-1])
             if temp <= 50: # 50퍼 이하만 
                 if temp < minCpuUse:
                     minCpuUse = temp 
                     minCpuUseNode = nodeName
-                if temp > maxCpuUse:
+                    minMemUse = float(resourceUse[1][:-1])
+                if temp > maxCpuUse: 
                     maxCpuUse = temp 
                     maxCpuUseNode = nodeName
+                    maxMemUse = float(resourceUse[1][:-1])
+                if temp == minCpuUse:
+                    tempMem = float(resourceUse[1][:-1])
+                    if tempMem < minMemUse:
+                        minCpuUse = temp 
+                        minCpuUseNode = nodeName
+                        minMemUse = tempMem
 
     time.sleep(1) # 1초씩 
 
@@ -174,18 +184,21 @@ def migrationMintoMax(minNode):
 
     os.popen("kubectl cordon " + minNode + " --kubeconfig /root/kubeconfig.yml") # 스케줄 불가로 만들기 - 더이상 pod 할당 안되게
     
+    time.sleep(300) # 5분 대기 
+
     result = os.popen("kubectl get nodes " + minNode + " --kubeconfig /root/kubeconfig.yml").read()
 
     print("result:", result) 
 
-    nodeInfo = result.split('\n')[1:-1]
-    status = nodeInfo[0].split()[1]
+    nodeInfo = result.split('\n')[1:-1] 
+    status = nodeInfo[0].split()[1] 
 
     print("status: ", status)
     
     if "SchedulingDisabled" in status: 
         print("hi")
         os.popen("kubectl drain " + minNode + " --ignore-daemonsets --kubeconfig /root/kubeconfig.yml")
+        time.sleep(600) # 10분 대기 
         os.popen("kubectl delete nodes " + minNode + " --kubeconfig /root/kubeconfig.yml")
 
 
@@ -496,7 +509,7 @@ def delete():
 def checkNodes():
 
     while True:
-        nodes = extractNodeCPU()
+        nodes = extractNodeCPUAndMemory()
         if len(nodes) >= 2:
             minCpuUseNode, minCpuUse, maxCpuUseNode, maxCpuUse = findMinMaxCPUNodes(nodes)
             if float(minCpuUse) <= 20: # cpu의 사용량이 가장 낮은 node의 사용량이 20보다 작을 때만 migration 
