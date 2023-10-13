@@ -85,7 +85,7 @@ def generateServiceYaml(serviceName, servicePort, nodePort):
 
 # node의 이름과 ip를 추출하기 위한 용도 
 def extractNodesInfo():
-    result = subprocess.run(["kubectl", "get", "nodes", "-o", "wide", "--kubeconfig", "/root/kubeconfig.yml"], stdout=subprocess.PIPE, text=True)
+    result = os.popen("kubectl get nodes -o wide --kubeconfig /root/kubeconfig.yml")
 
     nodeInfoList = result.stdout.split('\n')[1:]
 
@@ -99,7 +99,7 @@ def extractNodesInfo():
 # pod의 external ip를 알기 위한 함수 
 def extractNodeIpOfPod(nodeList):
 
-    result = subprocess.run(["kubectl", "get", "pods", "-o", "wide", "--kubeconfig", "/root/kubeconfig.yml"], stdout=subprocess.PIPE, text=True)
+    result = os.popen("kubectl get pods -o wide --kubeconfig /root/kubeconfig.yml")
 
     nodeInfoList = result.stdout.split('\n')[1:]
 
