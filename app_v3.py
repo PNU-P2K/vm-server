@@ -184,6 +184,7 @@ def migrationMintoMax(minNode):
     print("status: ", status)
     
     if "SchedulingDisabled" in status: 
+        print("hi")
         os.popen("kubectl drain " + minNode + " --ignore-daemonsets --kubeconfig /root/kubeconfig.yml")
         os.popen("kubectl delete nodes " + minNode + " --kubeconfig /root/kubeconfig.yml")
 
