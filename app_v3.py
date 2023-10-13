@@ -9,7 +9,7 @@ from Crypto.Cipher import AES
 
 app = Flask(__name__)
 
-baseImageId = 'a1f78e91446e' # kasm-1.14.0 이미지
+baseImageId = '539c2be37d94' # kasm-1.14.0 이미지
 #baseImageId = '1692c5f95a70e' # 로컬 이미지
 
 BS = 16
