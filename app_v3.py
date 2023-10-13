@@ -180,10 +180,12 @@ def migrationMintoMax(minNode):
 
     nodeInfo = result.split('\n')[1:-1]
     status = nodeInfo[0].split()[1]
+
+    print("status: ", status)
     
     if "SchedulingDisabled" in status: 
         os.popen("kubectl drain " + minNode + " --ignore-daemonsets --kubeconfig /root/kubeconfig.yml")
-        os.popen("kubectl delete " + minNode + " --kubeconfig /root/kubeconfig.yml")
+        os.popen("kubectl delete nodes " + minNode + " --kubeconfig /root/kubeconfig.yml")
 
 
 # Pod yaml로 생성하기 
