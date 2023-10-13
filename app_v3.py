@@ -168,7 +168,7 @@ def findMinMaxCPUNodes(nodeCpuList):
 
     time.sleep(1) # 1초씩 
 
-    return minCpuUseNode, maxCpuUseNode
+    return minCpuUseNode, minCpuUse, maxCpuUseNode, maxCpuUse
 
 def migrationMintoMax(minNode):
 
@@ -495,8 +495,8 @@ def checkNodes():
     while True:
         nodes = extractNodeCPU()
         if len(nodes) >= 2:
-            minCpuUseNode, maxCpuUseNode = findMinMaxCPUNodes(nodes)
-            if float(minCpuUseNode) <= 20: # cpu의 사용량이 가장 낮은 node의 사용량이 20보다 작을 때만 migration 
+            minCpuUseNode, minCpuUse, maxCpuUseNode, maxCpuUse = findMinMaxCPUNodes(nodes)
+            if float(minCpuUse) <= 20: # cpu의 사용량이 가장 낮은 node의 사용량이 20보다 작을 때만 migration 
                 migrationMintoMax(minCpuUseNode) 
 
         time.sleep(3600) # 1시간에 1번씩 점검 
