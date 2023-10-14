@@ -250,6 +250,7 @@ def create():
     os.popen(applyPodCmd(serviceFilePath))
 
     nodeList = extractNodeInfo()
+    time.sleep(60)
     externalNodeIp = extractNodeIpOfPod(nodeList)
 
     print("nodes: ", nodeList)
