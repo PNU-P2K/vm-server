@@ -430,7 +430,11 @@ def start():
         ]
 
         print(exist_yaml)
-        
+
+        with open(deploymentFilePath, "w") as updateYamlFile:
+            yaml.safe_dump(exist_yaml, updateYamlFile)
+
+    print(os.popen(f"vi {deploymentFilePath}"))
     os.popen(applyPodCmd(deploymentFilePath))
     os.popen(applyPodCmd(serviceFilePath))
 
