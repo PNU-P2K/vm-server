@@ -162,34 +162,17 @@ def deleteServicePodCmd(serviceName):
 def deleteYamlFile(yamlFilePath):
     return "rm /home/yaml/ " + yamlFilePath
 
+# pod namespace 가져오기 
+def getPodNameSpace(podName):
+    return f"kubectl get pod {podName} -o custom-columns=NAMESPACE:.metadata.namespace --no-headers --kubeconfig /root/kubeconfig.yml"
 
-# Pod 백업 스크립트 작성 함수 
-def createBackupScript(podName, containerName, backUpDir):
+# yaml 파일 업데이트 함수 - deployment
+def updateDeploymentYaml(deploymentName, namespace, deploymentYaml):
+    return f"kubectl get deployment {deploymentName} -n {namespace} -o yaml > {deploymentYaml} --kubeconfig /root/kubeconfig.yml"
 
-    # 백업 대상 Pod와 컨테이너 설정
-    POD_NAME = podName
-    CONTAINER_NAME = containerName
-    BACKUP_DEST = "/home/backup/" + backUpDir  # vm + port 번호 
-    
-    # 백업 스크립트 내용 생성
-    script = f"""#!/bin/bash
-
-# 백업 대상 Pod와 컨테이너 설정
-POD_NAME="{POD_NAME}"
-CONTAINER_NAME="{CONTAINER_NAME}"
-BACKUP_DEST="{BACKUP_DEST}"
-
-# 컨테이너 상태를 스냅샷으로 저장
-kubectl cp $POD_NAME:/$CONTAINER_NAME $BACKUP_DEST/ --kubeconfig /root/kubeconfig.yml
-"""
-
-    return script
-
-# 스크립트 실행 권한 부여 및 스크립트 실행 
-def applyScript(scriptPath): 
-    print("scriptPath: ", scriptPath)
-    os.popen("chmod +x " + scriptPath) 
-    os.popen("sudo "+scriptPath) 
+# yaml 파일 업데이트 함수 - service 
+def updateServiceYaml(serviceName, namespace, serviceYaml):
+    return f"kubectl get service {serviceName} -n {namespace} -o yaml > {serviceYaml} --kubeconfig /root/kubeconfig.yml"
 
 # Dockerfile 작성함수 
 def createDockerfile(baseImage, sourcePath):
@@ -406,35 +389,6 @@ def start():
     deploymentFilePath = "/home/yaml/"+vmName+"Deployment.yaml"
     serviceFilePath = "/home/yaml/"+vmName+"Service.yaml"
 
-    ### 백업파일이 존재할때, 안할 때로 구분해서 다르게 적용시키기 
-    scriptPath = "/home/script/"+vmName+".sh"
-    backUpPath = "/home/backup/"+vmName
-    if os.path.isfile(scriptPath):
-        with open(deploymentFilePath, "r") as yamlFile:
-            exist_yaml = yaml.safe_load(yamlFile)
-        
-        exist_yaml["spec"]["template"]["spec"]["containers"][0]["volumeMounts"] = [
-            {
-                "name": "back-up",
-                "mountPath": "/data/shared"
-            }
-        ]
-
-        exist_yaml["spec"]["template"]["spec"]["volumes"] = [
-            {
-                "name": "back-up",
-                "hostPath": {
-                    "path": str(backUpPath)
-                }
-            }
-        ]
-
-        print(exist_yaml)
-
-        with open(deploymentFilePath, "w") as updateYamlFile:
-            yaml.safe_dump(exist_yaml, updateYamlFile)
-
-    print(os.popen(f"vi {deploymentFilePath}"))
     os.popen(applyPodCmd(deploymentFilePath))
     os.popen(applyPodCmd(serviceFilePath))
 
@@ -472,16 +426,13 @@ def stop():
     vmName = "vm"+port # containerName과 동일 
 
     realPodName = os.popen(getPodName(port)).read()
+    namespace = getPodNameSpace(realPodName)
 
-    # script 파일 생성 및 저장 (백업 과정) 
-    script = createBackupScript(realPodName, vmName, vmName)
-    print(script) 
-    
-    scriptPath = "/home/script/"+vmName+".sh"
-    with open(scriptPath, 'w') as scriptFile:
-        scriptFile.write(script) 
+    deploymentFilePath = "/home/yaml/"+vmName+"Deployment.yaml"
+    serviceFilePath = "/home/yaml/"+vmName+"Service.yaml"
 
-    applyScript(scriptPath) 
+    updateDeploymentYaml(vmName, namespace, deploymentFilePath)
+    updateServiceYaml(vmName,namespace, serviceFilePath)
 
     os.popen(deleteDeployPodCmd(vmName))
     os.popen(deleteServicePodCmd(vmName))
