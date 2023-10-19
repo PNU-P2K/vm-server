@@ -143,11 +143,11 @@ def applyPodCmd(yamlFilePath):
 
 # label로 Pod 이름 조회하기
 def getPodName(port) :
-    return "kubectl get pod -l port="+port+" -o name"
+    return "kubectl get pod -l port="+port+" -o name --kubeconfig /root/kubeconfig.yml"
 
 # pod 내부로 start.sh 복사하기
-def copyScriptToPod(podName) :
-    return "kubectl cp /home/ubuntu/start.sh "+podName+":/tmp"
+def copyScriptToPod(podName, containerName) :
+    return "kubectl cp /home/ubuntu/start.sh "+podName+":/tmp/ -c "+containerName+" --kubeconfig /root/kubeconfig.yml"
 
 # deployment Pod 지우기  
 def deleteDeployPodCmd(deploymentName): 
@@ -353,13 +353,18 @@ def start():
     os.popen(applyPodCmd(deploymentFilePath))
     os.popen(applyPodCmd(serviceFilePath))
     
+    time.sleep(3)
     
     stream1 = os.popen(getPodName(port))
-    podName = stream1.read()[4:]
+    podName = stream1.read()[4:-1]
     
-    os.popen(copyScriptToPod(podName))
+    print("podName:", podName)
     
-    changeVncScopeAndControlCmd = "kubectl exec -it "+podName+" bash /tmp/start.sh "+scope+" "+control+" "+pwd
+    os.popen(copyScriptToPod(podName, vmName))
+    
+    time.sleep(1)
+    
+    changeVncScopeAndControlCmd = "kubectl exec -it "+podName+" bash /tmp/start.sh "+scope+" "+control+" "+pwd+" --kubeconfig /root/kubeconfig.yml"
     os.popen(changeVncScopeAndControlCmd)
 
     response = {
