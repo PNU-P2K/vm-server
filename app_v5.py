@@ -456,11 +456,10 @@ def stop():
     deContainerId = aes.decrypt(containerId)
     vmName = "vm"+port # containerName과 동일 
 
-    stream1 = os.popen(getPodName(port))
-    podName = stream1.read()[4:-1]
+    realPodName = os.popen(getPodName(port)).read()
 
     # script 파일 생성 및 저장 (백업 과정) 
-    script = createBackupScript(podName, vmName, vmName)
+    script = createBackupScript(realPodName, vmName, vmName)
     scriptPath = "/home/script/"+vmName+".sh"
     with open(scriptPath, 'w') as scriptFile:
         scriptFile.write(script) 
