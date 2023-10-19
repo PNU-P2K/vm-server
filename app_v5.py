@@ -160,7 +160,7 @@ def deleteServicePodCmd(serviceName):
 
 # yaml 파일 지우기 
 def deleteYamlFile(yamlFilePath):
-    return "rm /home/yaml/ " + yamlFilePath
+    return "rm " + yamlFilePath
 
 # pod namespace 가져오기 
 def getPodNameSpace(podName):
@@ -434,6 +434,9 @@ def stop():
 
     deploymentFilePath = "/home/yaml/"+vmName+"Deployment.yaml"
     serviceFilePath = "/home/yaml/"+vmName+"Service.yaml"
+
+    os.popen(deleteYamlFile(deploymentFilePath))
+    os.popen(deleteYamlFile(serviceFilePath))
 
     os.popen(updateDeploymentYaml(vmName, namespace, deploymentFilePath))
     os.popen(updateServiceYaml(vmName,namespace, serviceFilePath))
