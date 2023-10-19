@@ -435,8 +435,8 @@ def stop():
     deploymentFilePath = "/home/yaml/"+vmName+"Deployment.yaml"
     serviceFilePath = "/home/yaml/"+vmName+"Service.yaml"
 
-    updateDeploymentYaml(vmName, namespace, deploymentFilePath)
-    updateServiceYaml(vmName,namespace, serviceFilePath)
+    os.popen(updateDeploymentYaml(vmName, namespace, deploymentFilePath))
+    os.popen(updateServiceYaml(vmName,namespace, serviceFilePath))
 
     print(os.popen(f"vi {deploymentFilePath}"))
 
