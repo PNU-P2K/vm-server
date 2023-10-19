@@ -143,11 +143,11 @@ def applyPodCmd(yamlFilePath):
 
 # label로 Pod 이름 조회하기
 def getPodName(port) :
-    return "kubectl get pod -l port="+port+" -o name"
+    return "kubectl get pod -l port="+port+" -o name --kubeconfig /root/kubeconfig.yml"
 
 # pod 내부로 start.sh 복사하기
-def copyScriptToPod(podName) :
-    return "kubectl cp /home/ubuntu/start.sh "+podName+":/tmp"
+def copyScriptToPod(podName, containerName) :
+    return "kubectl cp /home/ubuntu/start.sh "+podName+":/tmp/ -c "+containerName+" --kubeconfig /root/kubeconfig.yml"
 
 # deployment Pod 지우기  
 def deleteDeployPodCmd(deploymentName): 
