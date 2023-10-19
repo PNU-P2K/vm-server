@@ -438,15 +438,14 @@ def stop():
     deploymentFilePath = "/home/yaml/"+vmName+"Deployment.yaml"
     serviceFilePath = "/home/yaml/"+vmName+"Service.yaml"
 
-    os.popen(deleteYamlFile(deploymentFilePath))
-    os.popen(deleteYamlFile(serviceFilePath))
+    #os.popen(deleteYamlFile(deploymentFilePath))
 
     time.sleep(3)
 
     print("start")
 
     os.popen(updateDeploymentYaml(vmName, namespace, "/home/yaml/d.yaml"))
-    os.popen(updateServiceYaml(vmName,namespace, "home/yaml/s.yaml"))
+    #os.popen(updateServiceYaml(vmName,namespace, "home/yaml/s.yaml"))
 
     print("middle")
 
