@@ -69,7 +69,10 @@ def generateServiceYaml(serviceName, servicePort, nodePort):
         "metadata": {"name": serviceName},
         "spec": {
             "type": "NodePort",
-            "selector": {"app": "webdesktop"},
+            "selector": {
+                "app": "webdesktop",
+                "port": str(servicePort) # port label 추가
+            },
             "ports": [
                 {
                     "port": int(servicePort), 
