@@ -168,6 +168,8 @@ def getPodNameSpace(podName):
 
 # yaml 파일 업데이트 함수 - deployment
 def updateDeploymentYaml(deploymentName, namespace, deploymentYaml):
+    print("d: "+deploymentName)
+    print("n: "+ namespace)
     return f"kubectl get deployment {deploymentName} -n {namespace} -o yaml > {deploymentYaml} --kubeconfig /root/kubeconfig.yml"
 
 # yaml 파일 업데이트 함수 - service 
@@ -433,6 +435,8 @@ def stop():
 
     updateDeploymentYaml(vmName, namespace, deploymentFilePath)
     updateServiceYaml(vmName,namespace, serviceFilePath)
+
+    print(os.popen(f"vi {deploymentFilePath}"))
 
     os.popen(deleteDeployPodCmd(vmName))
     os.popen(deleteServicePodCmd(vmName))
