@@ -170,11 +170,11 @@ def getPodNameSpace(podName):
 def updateDeploymentYaml(deploymentName, namespace, deploymentYaml):
     print("d: "+deploymentName)
     print("n: "+ namespace)
-    return f"kubectl get deployment {deploymentName} -n {namespace} -o yaml > {deploymentYaml} --kubeconfig /root/kubeconfig.yml"
+    return f"kubectl get deployment {deploymentName} -n {namespace} -o yaml --kubeconfig /root/kubeconfig.yml > {deploymentYaml}"
 
 # yaml 파일 업데이트 함수 - service 
 def updateServiceYaml(serviceName, namespace, serviceYaml):
-    return f"kubectl get service {serviceName} -n {namespace} -o yaml > {serviceYaml} --kubeconfig /root/kubeconfig.yml"
+    return f"kubectl get service {serviceName} -n {namespace} -o yaml --kubeconfig /root/kubeconfig.yml > {serviceYaml}"
 
 # Dockerfile 작성함수 
 def createDockerfile(baseImage, sourcePath):
