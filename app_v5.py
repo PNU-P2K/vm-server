@@ -445,8 +445,8 @@ def stop():
 
     print("start")
 
-    os.popen(updateDeploymentYaml(vmName, namespace, deploymentFilePath))
-    os.popen(updateServiceYaml(vmName,namespace, serviceFilePath))
+    os.popen(updateDeploymentYaml(vmName, namespace, "/home/yaml/d.yaml"))
+    os.popen(updateServiceYaml(vmName,namespace, "home/yaml/s.yaml"))
 
     print("middle")
 
