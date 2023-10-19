@@ -141,6 +141,14 @@ def extractNodeIpOfPod(nodeList):
 def applyPodCmd(yamlFilePath):
     return "kubectl apply -f " + yamlFilePath + " --kubeconfig /root/kubeconfig.yml"
 
+# label로 Pod 이름 조회하기
+def getPodName(port) :
+    return "kubectl get pod -l port="+port+" -o name"
+
+# pod 내부로 start.sh 복사하기
+def copyScriptToPod(podName) :
+    return "kubectl cp /home/ubuntu/start.sh "+podName+":/tmp"
+
 # deployment Pod 지우기  
 def deleteDeployPodCmd(deploymentName): 
     return "kubectl delete deployment " + deploymentName + " --kubeconfig /root/kubeconfig.yml"
@@ -237,7 +245,7 @@ def create():
     os.popen(stopContainerCmd(containerId))
 
     # Depolyment yaml 파일 생성 
-    deploymentPodYaml = generateDeploymentPodYaml(vmName, vmName, imagePath, scriptPath, scope, control, pwd)
+    deploymentPodYaml = generateDeploymentPodYaml(vmName, vmName, imagePath, port)
     deploymentFilePath = "/home/yaml/"+vmName+"Deployment.yaml"
     with open(deploymentFilePath, 'w') as deploymentYamlFile:
         deploymentYamlFile.write(deploymentPodYaml) 
@@ -300,7 +308,7 @@ def load() :
     os.popen(stopContainerCmd(newContainerId))
 
     # Depolyment yaml 파일 생성 
-    deploymentPodYaml = generateDeploymentPodYaml(vmName, vmName, imagePath, scriptPath, scope, control, pwd)
+    deploymentPodYaml = generateDeploymentPodYaml(vmName, vmName, imagePath, port)
     deploymentFilePath = "/home/yaml/"+vmName+"Deployment.yaml"
     with open(deploymentFilePath, 'w') as deploymentYamlFile:
         deploymentYamlFile.write(deploymentPodYaml) 
@@ -344,6 +352,15 @@ def start():
 
     os.popen(applyPodCmd(deploymentFilePath))
     os.popen(applyPodCmd(serviceFilePath))
+    
+    
+    stream1 = os.popen(getPodName(port))
+    podName = stream1.read()[4:]
+    
+    os.popen(copyScriptToPod(podName))
+    
+    changeVncScopeAndControlCmd = "kubectl exec -it "+podName+" bash /tmp/start.sh "+scope+" "+control+" "+pwd
+    os.popen(changeVncScopeAndControlCmd)
 
     response = {
             'port' : port,
