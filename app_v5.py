@@ -170,10 +170,13 @@ def getPodNameSpace(podName):
 def updateDeploymentYaml(deploymentName, namespace, deploymentYaml):
     print("d: "+deploymentName)
     print("n: "+ namespace)
+    print("path: "+deploymentYaml)
     return f"kubectl get deployment {deploymentName} -n {namespace} -o yaml > {deploymentYaml} --kubeconfig /root/kubeconfig.yml"
 
 # yaml 파일 업데이트 함수 - service 
 def updateServiceYaml(serviceName, namespace, serviceYaml):
+    print("s: "+serviceName)
+    print("n: "+namespace)
     return f"kubectl get service {serviceName} -n {namespace} -o yaml > {serviceYaml} --kubeconfig /root/kubeconfig.yml"
 
 # Dockerfile 작성함수 
@@ -440,13 +443,17 @@ def stop():
 
     time.sleep(3)
 
+    print("start")
+
     os.popen(updateDeploymentYaml(vmName, namespace, deploymentFilePath))
     os.popen(updateServiceYaml(vmName,namespace, serviceFilePath))
 
-    print(os.popen(f"vi {deploymentFilePath}"))
+    print("middle")
 
     os.popen(deleteDeployPodCmd(vmName))
     os.popen(deleteServicePodCmd(vmName))
+
+    print("end")
 
     response = {
             'port' : port,
