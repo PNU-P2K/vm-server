@@ -187,7 +187,7 @@ kubectl cp $POD_NAME:/$CONTAINER_NAME $BACKUP_DEST/ --kubeconfig /root/kubeconfi
 
 # 스크립트 실행 권한 부여 및 스크립트 실행 
 def applyScript(scriptPath): 
-
+    print("scriptPath: ", scriptPath)
     os.popen("chmod +x " + scriptPath) 
     os.popen(scriptPath) 
 
@@ -428,6 +428,8 @@ def start():
                 }
             }
         ]
+
+        print(exist_yaml)
         
     os.popen(applyPodCmd(deploymentFilePath))
     os.popen(applyPodCmd(serviceFilePath))
@@ -469,6 +471,8 @@ def stop():
 
     # script 파일 생성 및 저장 (백업 과정) 
     script = createBackupScript(realPodName, vmName, vmName)
+    print(script) 
+    
     scriptPath = "/home/script/"+vmName+".sh"
     with open(scriptPath, 'w') as scriptFile:
         scriptFile.write(script) 
@@ -511,8 +515,10 @@ def save() :
 
     buildImg = buildDockerImage(dockerFilePath)
 
+    print("dockerFile: ", dockerfile)
+    print("docker images: ", os.popen("docker images"))
+
     pushImgCmdV2(buildImg)
-    
     # 
 
     stream1 = os.popen(createImgCmd(deContainerId, userId, port))
