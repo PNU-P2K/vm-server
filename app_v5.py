@@ -169,7 +169,7 @@ def createBackupScript(podName, containerName, backUpDir):
     # 백업 대상 Pod와 컨테이너 설정
     POD_NAME = podName
     CONTAINER_NAME = containerName
-    BACKUP_DEST = "/home/backup/" + backUpDir + ".sh" # vm + port 번호 + 확장자(.sh) 
+    BACKUP_DEST = "/home/backup/" + backUpDir  # vm + port 번호 
     
     # 백업 스크립트 내용 생성
     script = f"""#!/bin/bash
@@ -186,10 +186,10 @@ kubectl cp $POD_NAME:/$CONTAINER_NAME $BACKUP_DEST/ --kubeconfig /root/kubeconfi
     return script
 
 # 스크립트 실행 권한 부여 및 스크립트 실행 
-def applyScript(scriptPath):
+def applyScript(scriptPath): 
 
-    os.popen("chmod +x " + scriptPath)
-    os.popen(scriptPath)
+    os.popen("chmod +x " + scriptPath) 
+    os.popen(scriptPath) 
 
 
 
@@ -388,12 +388,32 @@ def start():
     deploymentFilePath = "/home/yaml/"+vmName+"Deployment.yaml"
     serviceFilePath = "/home/yaml/"+vmName+"Service.yaml"
 
-    print(applyPodCmd(deploymentFilePath))
-    print(applyPodCmd(serviceFilePath))
+    ### 백업파일이 존재할때, 안할 때로 구분해서 다르게 적용시키기 
+    scriptPath = "/home/script/"+vmName+".sh"
+    backUpPath = "/home/script/"+vmName
+    if os.path.isfile(scriptPath):
+        with open(deploymentFilePath, "r") as yamlFile:
+            exist_yaml = yaml.safe_load(yamlFile)
+        
+        exist_yaml["spec"]["template"]["spec"]["containers"][0]["volumeMounts"] = [
+            {
+                "name": "back-up",
+                "mountPath": "/data/shared"
+            }
+        ]
 
+        exist_yaml["spec"]["template"]["spec"]["volumes"] = [
+            {
+                "name": "back-up",
+                "hostPath": {
+                    "path": str(backUpPath)
+                }
+            }
+        ]
+        
     os.popen(applyPodCmd(deploymentFilePath))
     os.popen(applyPodCmd(serviceFilePath))
-    
+
     time.sleep(3)
     
     stream1 = os.popen(getPodName(port))
@@ -431,17 +451,15 @@ def stop():
     podName = stream1.read()[4:-1]
 
     # script 파일 생성 및 저장 
-    createBackupScript(podName, vmName, vmName)
+    script = createBackupScript(podName, vmName, vmName)
+    scriptPath = "/home/script/"+vmName+".sh"
+    with open(scriptPath, 'w') as scriptFile:
+        scriptFile.write(script)
 
-    scriptPath = "/home/backup/vm"+port+".sh"
-
-    applyScript(scriptPath)
+    applyScript(scriptPath) 
 
 
 
-
-    #print(deleteDeployPodCmd(vmName))
-    #print(deleteServicePodCmd(vmName))
 
     #os.popen(deleteDeployPodCmd(vmName))
     #os.popen(deleteServicePodCmd(vmName))
