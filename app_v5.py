@@ -449,6 +449,8 @@ def stop():
 
     print("middle")
 
+    time.sleep(30)
+
     os.popen(deleteDeployPodCmd(vmName))
     os.popen(deleteServicePodCmd(vmName))
 
