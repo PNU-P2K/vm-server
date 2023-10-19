@@ -179,14 +179,8 @@ POD_NAME="{POD_NAME}"
 CONTAINER_NAME="{CONTAINER_NAME}"
 BACKUP_DEST="{BACKUP_DEST}"
 
-# 백업을 위한 임시 Pod 생성
-kubectl run backup-pod --image=busybox --restart=Never --command -- /bin/sh -c "mkdir -p $BACKUP_DEST && cp -r /path/to/data $BACKUP_DEST" --kubeconfig /root/kubeconfig.yml
-
-# 백업 파일을 로컬 디렉토리로 복사
-kubectl cp backup-pod:$BACKUP_DEST ./backup_data --kubeconfig /root/kubeconfig.yml
-
-# 백업을 위한 임시 Pod 삭제
-kubectl delete pod backup-pod --kubeconfig /root/kubeconfig.yml
+# 컨테이너 상태를 스냅샷으로 저장
+kubectl cp $POD_NAME:/$CONTAINER_NAME $BACKUP_DEST/
 """
 
     return script
