@@ -428,7 +428,7 @@ def stop():
     vmName = "vm"+port # containerName과 동일 
 
     realPodName = os.popen(getPodName(port)).read()
-    namespace = getPodNameSpace(realPodName)
+    namespace = os.popen(getPodNameSpace(realPodName)).read()
 
     deploymentFilePath = "/home/yaml/"+vmName+"Deployment.yaml"
     serviceFilePath = "/home/yaml/"+vmName+"Service.yaml"
