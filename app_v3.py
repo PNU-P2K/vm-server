@@ -353,13 +353,18 @@ def start():
     os.popen(applyPodCmd(deploymentFilePath))
     os.popen(applyPodCmd(serviceFilePath))
     
+    time.sleep(3)
     
     stream1 = os.popen(getPodName(port))
-    podName = stream1.read()[4:]
+    podName = stream1.read()[4:-1]
     
-    os.popen(copyScriptToPod(podName))
+    print("podName:", podName)
     
-    changeVncScopeAndControlCmd = "kubectl exec -it "+podName+" bash /tmp/start.sh "+scope+" "+control+" "+pwd
+    os.popen(copyScriptToPod(podName, vmName))
+    
+    time.sleep(1)
+    
+    changeVncScopeAndControlCmd = "kubectl exec -it "+podName+" bash /tmp/start.sh "+scope+" "+control+" "+pwd+" --kubeconfig /root/kubeconfig.yml"
     os.popen(changeVncScopeAndControlCmd)
 
     response = {
