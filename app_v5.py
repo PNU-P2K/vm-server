@@ -169,7 +169,7 @@ def createBackupScript(podName, containerName, backUpDir):
     # 백업 대상 Pod와 컨테이너 설정
     POD_NAME = podName
     CONTAINER_NAME = containerName
-    BACKUP_DEST = "/backup/" + backUpDir
+    BACKUP_DEST = "/home/backup/" + backUpDir + ".sh" # vm + port 번호 + 확장자(.sh) 
     
     # 백업 스크립트 내용 생성
     script = f"""#!/bin/bash
@@ -180,12 +180,16 @@ CONTAINER_NAME="{CONTAINER_NAME}"
 BACKUP_DEST="{BACKUP_DEST}"
 
 # 컨테이너 상태를 스냅샷으로 저장
-kubectl cp $POD_NAME:/$CONTAINER_NAME $BACKUP_DEST/
+kubectl cp $POD_NAME:/$CONTAINER_NAME $BACKUP_DEST/ --kubeconfig /root/kubeconfig.yml
 """
 
     return script
 
+# 스크립트 실행 권한 부여 및 스크립트 실행 
+def applyScript(scriptPath):
 
+    os.popen("chmod +x " + scriptPath)
+    os.popen(scriptPath)
 
 
 
@@ -426,9 +430,14 @@ def stop():
     stream1 = os.popen(getPodName(port))
     podName = stream1.read()[4:-1]
 
-    backUpScript = createBackupScript(podName, vmName, vmName)
+    # script 파일 생성 및 저장 
+    createBackupScript(podName, vmName, vmName)
 
-    print(backUpScript)
+    scriptPath = "/home/backup/vm"+port+".sh"
+
+    applyScript(scriptPath)
+
+
 
 
     #print(deleteDeployPodCmd(vmName))
