@@ -427,8 +427,10 @@ def stop():
     deContainerId = aes.decrypt(containerId)
     vmName = "vm"+port # containerName과 동일 
 
-    realPodName = os.popen(getPodName(port)).read()
+    realPodName = os.popen(getPodName(port)).read()[4:-1]
     namespace = os.popen(getPodNameSpace(realPodName)).read()
+
+    print("name: "+namespace)
 
     deploymentFilePath = "/home/yaml/"+vmName+"Deployment.yaml"
     serviceFilePath = "/home/yaml/"+vmName+"Service.yaml"
