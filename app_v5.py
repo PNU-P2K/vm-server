@@ -192,21 +192,27 @@ def applyScript(scriptPath):
     os.popen(scriptPath) 
 
 # Dockerfile 작성함수 
-def generate_dockerfile(baseImage, sourcePath, destinationPath):
+def createDockerfile(baseImage, sourcePath):
     # Dockerfile 내용을 저장할 문자열 초기화
     dockerfileContent = f"FROM {baseImage}\n"
     
     # 파일 복사 명령 추가
-    copyInstruction = f"COPY {sourcePath} {destinationPath}\n"
-    dockerfileContent += copyInstruction
+    volumeMount = f"VOLUME [{sourcePath}]\n"
+    dockerfileContent += volumeMount
 
     # Dockerfile 내용 반환
     return dockerfileContent
 
+# Dockerfile build 함수 
+def buildDockerImage(userId, port, dockerFilePath):
+    os.popen(f"docker build -t {userId}:{port} {dockerFilePath}")
+    return f"{userId}:{port}"
 
+def deleteScript():
+    return 
 
-
-
+def deleteBackUpData():
+    return
 
 #=================
 
@@ -236,6 +242,9 @@ def createImgCmd(containerId, userId, port) : # registry.p2kcloud.com/base/useri
 
 def pushImgCmd(userId, port) :          # harbor에 이미지 저장
     return "docker push registry.p2kcloud.com/base/"+userId+":"+port
+
+def pushImgCmdV2(dockerImage):
+    return "docker push registry.p2kcloud.com/base/"+dockerImage
 
 def deleteImgCmd(imageId) :             # imageid로 이미지 삭제
     return "docker rmi -f "+imageId
@@ -399,7 +408,7 @@ def start():
 
     ### 백업파일이 존재할때, 안할 때로 구분해서 다르게 적용시키기 
     scriptPath = "/home/script/"+vmName+".sh"
-    backUpPath = "/home/script/"+vmName
+    backUpPath = "/home/backup/"+vmName
     if os.path.isfile(scriptPath):
         with open(deploymentFilePath, "r") as yamlFile:
             exist_yaml = yaml.safe_load(yamlFile)
@@ -487,6 +496,24 @@ def save() :
     userId, port, pwd = str(requestDTO['id']), str(requestDTO['port']), str(requestDTO['pwd'])
     containerId, imageId = str(requestDTO['containerId']), str(requestDTO['imageId'])
     deContainerId, deImageId = aes.decrypt(containerId), aes.decrypt(imageId)
+
+    baseImagePath = str(requestDTO['imagePath'])
+
+    # 백업 데이터로 dockerfile 만들고 build하고 registry push 
+
+    baseImage = baseImagePath
+    srcPath = "/home/backup/vm"+ port 
+
+    dockerfile = createDockerfile(baseImage, srcPath)
+    dockerFilePath = "/home/dockerFile/vm"+port
+    with open(dockerFilePath, 'w') as content:
+        content.write(dockerfile) 
+
+    buildImg = buildDockerImage(dockerFilePath)
+
+    pushImgCmdV2(buildImg)
+    
+    # 
 
     stream1 = os.popen(createImgCmd(deContainerId, userId, port))
     newImageId = stream1.read()[7:20]
