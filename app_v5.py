@@ -517,7 +517,7 @@ def save() :
     with open(dockerFilePath, 'w') as content:
         content.write(dockerfile) 
 
-    buildImg = buildDockerImage(dockerFilePath)
+    buildImg = buildDockerImage(userId, port, dockerFilePath)
 
     print("dockerFile: ", dockerfile)
     print("docker images: ", os.popen("docker images"))
