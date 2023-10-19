@@ -191,8 +191,17 @@ def applyScript(scriptPath):
     os.popen("chmod +x " + scriptPath) 
     os.popen(scriptPath) 
 
+# Dockerfile 작성함수 
+def generate_dockerfile(baseImage, sourcePath, destinationPath):
+    # Dockerfile 내용을 저장할 문자열 초기화
+    dockerfileContent = f"FROM {baseImage}\n"
+    
+    # 파일 복사 명령 추가
+    copyInstruction = f"COPY {sourcePath} {destinationPath}\n"
+    dockerfileContent += copyInstruction
 
-
+    # Dockerfile 내용 반환
+    return dockerfileContent
 
 
 
@@ -450,19 +459,16 @@ def stop():
     stream1 = os.popen(getPodName(port))
     podName = stream1.read()[4:-1]
 
-    # script 파일 생성 및 저장 
+    # script 파일 생성 및 저장 (백업 과정) 
     script = createBackupScript(podName, vmName, vmName)
     scriptPath = "/home/script/"+vmName+".sh"
     with open(scriptPath, 'w') as scriptFile:
-        scriptFile.write(script)
+        scriptFile.write(script) 
 
     applyScript(scriptPath) 
 
-
-
-
-    #os.popen(deleteDeployPodCmd(vmName))
-    #os.popen(deleteServicePodCmd(vmName))
+    os.popen(deleteDeployPodCmd(vmName))
+    os.popen(deleteServicePodCmd(vmName))
 
     response = {
             'port' : port,
