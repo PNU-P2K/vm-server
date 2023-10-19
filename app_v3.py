@@ -20,7 +20,7 @@ extractPodInfos = dict()
 extractNodeCPUs = dict()
 
 # deployment pod 만드는 함수
-def generateDeploymentPodYaml(deploymentName, containerName, imageName, scriptPath, scope, control, pwd) : 
+def generateDeploymentPodYaml(deploymentName, containerName, imageName, servicePort) : 
     deploymentDefinition = {
         "apiVersion": "apps/v1",
         "kind": "Deployment",
@@ -29,13 +29,15 @@ def generateDeploymentPodYaml(deploymentName, containerName, imageName, scriptPa
             "replicas": 1,
             "selector": {
                 "matchLabels": {
-                    "app": "webdesktop" # service에서 pod를 선택할 때 구별하는 용도 
+                    "app": "webdesktop", # service에서 pod를 선택할 때 구별하는 용도 
+                    "port": str(servicePort) # port label 추가
                 }
             },
             "template": {
                 "metadata": {
                     "labels": {
-                        "app": "webdesktop" # 새로운 pod가 생성될 때 template 정의 
+                        "app": "webdesktop", # 새로운 pod가 생성될 때 template 정의 
+                        "port": str(servicePort) # port label 추가 
                     }
                 },
                 "spec": { 
