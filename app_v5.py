@@ -188,7 +188,7 @@ kubectl cp $POD_NAME:/$CONTAINER_NAME $BACKUP_DEST/ --kubeconfig /root/kubeconfi
 # 스크립트 실행 권한 부여 및 스크립트 실행 
 def applyScript(scriptPath): 
     print("scriptPath: ", scriptPath)
-    os.popen("chmod +x " + scriptPath) 
+    os.popen("sudo chmod +x " + scriptPath) 
     os.popen(scriptPath) 
 
 # Dockerfile 작성함수 
