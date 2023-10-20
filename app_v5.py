@@ -513,8 +513,6 @@ def save() :
     containerId, imageId = str(requestDTO['containerId']), str(requestDTO['imageId'])
     deContainerId, deImageId = aes.decrypt(containerId), aes.decrypt(imageId)
 
-    baseImagePath = str(requestDTO['imagePath'])
-
     # 백업 데이터로 dockerfile 만들고 build하고 registry push 
 
     vmName = "vm"+port
