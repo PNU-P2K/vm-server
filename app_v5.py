@@ -162,6 +162,54 @@ def deleteServicePodCmd(serviceName):
 def deleteYamlFile(yamlFilePath):
     return "rm " + yamlFilePath
 
+# Pod 백업 스크립트 작성 함수 
+def createStopScript(containerName):
+
+    # 백업 대상 Pod의 컨테이너 설정
+    CONTAINERNAME = containerName
+    
+    # 중지 스크립트 내용 생성
+    script = f"""#!/bin/bash
+
+# 백업 대상 Pod와 컨테이너 설정
+CONTAINERNAME="{CONTAINERNAME}"
+CONTAINERID="$(docker ps -qf "name=$CONTAINERNAME")"
+
+# 컨테이너 상태 중지 
+docker stop $CONTAINERID 
+"""
+
+    return script
+
+# Pod 백업 스크립트 작성 함수 
+def createBackupScript(containerName, imagePath, port):
+
+    # 백업 대상 Pod의 컨테이너 설정
+    CONTAINERNAME = containerName
+    IMAGEPATH = imagePath
+    PORT = port
+    
+    # 백업 스크립트 내용 생성
+    script = f"""#!/bin/bash
+
+# 백업 대상 Pod와 컨테이너 설정
+CONTAINERNAME="{CONTAINERNAME}"
+CONTAINERID="$(docker ps -qf "name=$CONTAINERNAME")"
+IMAGEPATH="{IMAGEPATH}"
+PORT="{PORT}"
+
+
+
+# 컨테이너 상태를 스냅샷으로 저장 
+docker commit $CONTAINERID $IMAGEPATH:$PORT  
+# 컨테이너 상태를 harbor로 저장 
+docker push $IMAGEPATH:$PORT
+"""
+
+    return script
+
+
+#===================
 # pod namespace 가져오기 
 def getPodNameSpace(podName):
     return f"kubectl get pod {podName} -o custom-columns=NAMESPACE:.metadata.namespace --no-headers --kubeconfig /root/kubeconfig.yml"
@@ -429,31 +477,31 @@ def stop():
     port, containerId = str(requestDTO['port']), str(requestDTO['containerId'])
     deContainerId = aes.decrypt(containerId)
     vmName = "vm"+port # containerName과 동일 
+    userId = str(requestDTO['id'])
 
-    realPodName = os.popen(getPodName(port)).read()[4:-1]
-    namespace = os.popen(getPodNameSpace(realPodName)).read()[:-1]
+    podName = os.popen(getPodName(port)).read()[4:-1]
+    namespace = os.popen(getPodNameSpace(podName)).read()[:-1]
 
     print("name: "+namespace)
 
     deploymentFilePath = "/home/yaml/"+vmName+"Deployment.yaml"
     serviceFilePath = "/home/yaml/"+vmName+"Service.yaml"
 
-    os.popen(deleteYamlFile(deploymentFilePath))
-    os.popen(deleteYamlFile(serviceFilePath))
-
-    time.sleep(3)
+    imagePath = "registry.p2kcloud.com/base/"+userId
 
     print("start")
+    stopScript = createStopScript(vmName)
+    scriptFilePath = "/tmp/script/stop/"+vmName+".sh"
+    with open(scriptFilePath, 'w') as scriptFile:
+        scriptFile.write(stopScript)
 
-    os.popen(updateDeploymentYaml(vmName, namespace, deploymentFilePath))
-    os.popen(updateServiceYaml(vmName,namespace, serviceFilePath))
+    print("stop script: "+stopScript)
 
-    print("middle")
+    accessContainer = f"kubectl exec -it {podName} bash /tmp/script/stop/{vmName}.sh --kubeconfig /root/kubeconfig.yml"
+    os.popen(accessContainer)
 
-    time.sleep(30)
-
-    os.popen(deleteDeployPodCmd(vmName))
-    os.popen(deleteServicePodCmd(vmName))
+    #os.popen(deleteYamlFile(deploymentFilePath))
+    #os.popen(deleteYamlFile(serviceFilePath))
 
     print("end")
 
@@ -480,20 +528,19 @@ def save() :
 
     # 백업 데이터로 dockerfile 만들고 build하고 registry push 
 
-    baseImage = baseImagePath
-    srcPath = "/home/backup/vm"+ port 
+    vmName = "vm"+port
+    imagePath = "registry.p2kcloud.com/base/"+userId
+    podName = os.popen(getPodName(port)).read()[4:-1]
 
-    dockerfile = createDockerfile(baseImage, srcPath)
-    dockerFilePath = "/home/dockerFile/vm"+port
-    with open(dockerFilePath, 'w') as content:
-        content.write(dockerfile) 
+    backupScript = createBackupScript(vmName, imagePath, port)
+    scriptFilePath = "/tmp/script/backup/"+vmName+".sh"
+    with open(scriptFilePath, 'w') as scriptFile:
+        scriptFile.write(backupScript)
 
-    buildImg = buildDockerImage(userId, port, dockerFilePath)
+    print("save script: "+backupScript)
 
-    print("dockerFile: ", dockerfile)
-    print("docker images: ", os.popen("docker images"))
-
-    pushImgCmdV2(buildImg)
+    accessContainer = f"kubectl exec -it {podName} bash /tmp/script/backup/{vmName}.sh --kubeconfig /root/kubeconfig.yml"
+    os.popen(accessContainer)
     # 
 
     stream1 = os.popen(createImgCmd(deContainerId, userId, port))
