@@ -477,7 +477,6 @@ def stop():
     port, containerId = str(requestDTO['port']), str(requestDTO['containerId'])
     deContainerId = aes.decrypt(containerId)
     vmName = "vm"+port # containerName과 동일 
-    userId = str(requestDTO['id'])
 
     podName = os.popen(getPodName(port)).read()[4:-1]
     namespace = os.popen(getPodNameSpace(podName)).read()[:-1]
@@ -486,8 +485,6 @@ def stop():
 
     deploymentFilePath = "/home/yaml/"+vmName+"Deployment.yaml"
     serviceFilePath = "/home/yaml/"+vmName+"Service.yaml"
-
-    imagePath = "registry.p2kcloud.com/base/"+userId
 
     print("start")
     stopScript = createStopScript(vmName)
