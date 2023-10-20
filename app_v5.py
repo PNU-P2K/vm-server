@@ -171,7 +171,7 @@ def updateDeploymentYaml(deploymentName, namespace, deploymentYaml):
     print("d: "+deploymentName)
     print("n: "+ namespace)
     print("path: "+deploymentYaml)
-    return "kubectl get deployment "+deploymentName+" -n default -o yaml > "+deploymentYaml+" --kubeconfig /root/kubeconfig.yml"
+    return f"kubectl get deployment {deploymentName} -n {namespace} -o yaml > {deploymentYaml} --kubeconfig /root/kubeconfig.yml"
 
 # yaml 파일 업데이트 함수 - service 
 def updateServiceYaml(serviceName, namespace, serviceYaml):
@@ -431,28 +431,29 @@ def stop():
     vmName = "vm"+port # containerName과 동일 
 
     realPodName = os.popen(getPodName(port)).read()[4:-1]
-    namespace = os.popen(getPodNameSpace(realPodName)).read()
+    namespace = os.popen(getPodNameSpace(realPodName)).read()[:-1]
 
     print("name: "+namespace)
 
     deploymentFilePath = "/home/yaml/"+vmName+"Deployment.yaml"
     serviceFilePath = "/home/yaml/"+vmName+"Service.yaml"
 
-    #os.popen(deleteYamlFile(deploymentFilePath))
+    os.popen(deleteYamlFile(deploymentFilePath))
+    os.popen(deleteYamlFile(serviceFilePath))
 
     time.sleep(3)
 
     print("start")
 
-    os.popen(updateDeploymentYaml(vmName, namespace, "/home/yaml/dtest.yaml"))
-    #os.popen(updateServiceYaml(vmName,namespace, "home/yaml/s.yaml"))
+    os.popen(updateDeploymentYaml(vmName, namespace, deploymentFilePath))
+    os.popen(updateServiceYaml(vmName,namespace, serviceFilePath))
 
     print("middle")
 
     time.sleep(30)
 
-    #os.popen(deleteDeployPodCmd(vmName))
-    #os.popen(deleteServicePodCmd(vmName))
+    os.popen(deleteDeployPodCmd(vmName))
+    os.popen(deleteServicePodCmd(vmName))
 
     print("end")
 
