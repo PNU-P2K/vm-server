@@ -384,6 +384,12 @@ def load() :
     userId, port, pwd, imageId = str(requestDTO['id']), str(requestDTO['port']), str(requestDTO['password']), str(requestDTO['key'])
     deImageId = aes.decrypt(imageId)
 
+    print("deImagePath: "+deImageId)
+    
+    vmName = "vm"+port
+    nodePort = str(requestDTO['nodePort'])
+
+    
     stream1 = os.popen(createContainerCmd(port, pwd, deImageId))
     newContainerId = stream1.read()[:12]
     enContainerId = aes.encrypt(newContainerId)
@@ -403,7 +409,7 @@ def load() :
     os.popen(stopContainerCmd(newContainerId))
 
     # Depolyment yaml 파일 생성 
-    deploymentPodYaml = generateDeploymentPodYaml(vmName, vmName, imagePath, port)
+    deploymentPodYaml = generateDeploymentPodYaml(vmName, vmName, deImageId, port)
     deploymentFilePath = "/home/yaml/"+vmName+"Deployment.yaml"
     with open(deploymentFilePath, 'w') as deploymentYamlFile:
         deploymentYamlFile.write(deploymentPodYaml) 
@@ -416,7 +422,7 @@ def load() :
 
     response = {
         'containerId' : enContainerId,
-        'imageId' : enImageId
+        'imageId' : imageId # 경로 암호화 
     }
 
     return jsonify(response), 200
@@ -481,11 +487,6 @@ def stop():
     podName = os.popen(getPodName(port)).read()[4:-1]
     namespace = os.popen(getPodNameSpace(podName)).read()[:-1]
 
-    print("name: "+namespace)
-
-    deploymentFilePath = "/home/yaml/"+vmName+"Deployment.yaml"
-    serviceFilePath = "/home/yaml/"+vmName+"Service.yaml"
-
     print("start")
     stopScript = createStopScript(vmName)
     scriptFilePath = "/tmp/script/stop/"+vmName+".sh"
@@ -496,9 +497,6 @@ def stop():
 
     accessContainer = f"kubectl exec -it {podName} bash /tmp/script/stop/{vmName}.sh --kubeconfig /root/kubeconfig.yml"
     os.popen(accessContainer)
-
-    #os.popen(deleteYamlFile(deploymentFilePath))
-    #os.popen(deleteYamlFile(serviceFilePath))
 
     print("end")
 
@@ -540,7 +538,10 @@ def save() :
     os.popen(accessContainer)
     # 
 
-    stream1 = os.popen(createImgCmd(deContainerId, userId, port))
+    enImageId = aes.encrypt(imagePath+":"+port)
+    print("enImagePath : ", enImageId)
+
+    '''stream1 = os.popen(createImgCmd(deContainerId, userId, port))
     newImageId = stream1.read()[7:20]
     enImageId = aes.encrypt(newImageId)
     print("1 : ", stream1.read())
@@ -554,10 +555,12 @@ def save() :
 
     print("newImageId : ", newImageId)
     print("ennewImageId : ", enImageId)
+    print("path: "+imagePath+":"+port)'''
 
     response = {
             'containerId' : containerId,
-            'imageId' : enImageId
+            'imageId' : enImageId, # 경로 암호화 
+            'imagePath' : imagePath+":"+port
         }
 
     return jsonify(response), 200
