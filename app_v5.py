@@ -171,7 +171,7 @@ def updateDeploymentYaml(deploymentName, namespace, deploymentYaml):
     print("d: "+deploymentName)
     print("n: "+ namespace)
     print("path: "+deploymentYaml)
-    return "kubectl get deployment "+deploymentName+" -n "+namespace+" --kubeconfig /root/kubeconfig.yml -o yaml > "+deploymentYaml
+    return "kubectl get deployment "+deploymentName+" -n default -o yaml > "+deploymentYaml+" --kubeconfig /root/kubeconfig.yml"
 
 # yaml 파일 업데이트 함수 - service 
 def updateServiceYaml(serviceName, namespace, serviceYaml):
