@@ -171,7 +171,7 @@ def updateDeploymentYaml(deploymentName, namespace, deploymentYaml):
     print("d: "+deploymentName)
     print("n: "+ namespace)
     print("path: "+deploymentYaml)
-    return "kubectl get deployment "+deploymentName+" -n "+namespace+" -o yaml > "+deploymentYaml+" --kubeconfig /root/kubeconfig.yml"
+    return "kubectl get deployment "+deploymentName+" -n "+namespace+" -o yaml --kubeconfig /root/kubeconfig.yml > "+deploymentYaml
 
 # yaml 파일 업데이트 함수 - service 
 def updateServiceYaml(serviceName, namespace, serviceYaml):
@@ -444,7 +444,7 @@ def stop():
 
     print("start")
 
-    os.popen(updateDeploymentYaml(vmName, namespace, "/home/yaml/d.yaml"))
+    os.popen(updateDeploymentYaml(vmName, namespace, "/home/yaml/dtest.yaml"))
     #os.popen(updateServiceYaml(vmName,namespace, "home/yaml/s.yaml"))
 
     print("middle")
