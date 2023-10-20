@@ -451,8 +451,8 @@ def stop():
 
     time.sleep(30)
 
-    os.popen(deleteDeployPodCmd(vmName))
-    os.popen(deleteServicePodCmd(vmName))
+    #os.popen(deleteDeployPodCmd(vmName))
+    #os.popen(deleteServicePodCmd(vmName))
 
     print("end")
 
