@@ -227,8 +227,8 @@ def createStopScript(namespace, podName, vmName):
     script = f"""#!/bin/bash
 
 # k8s 파일 복사 (pod 내부)
-cp -r /usr/ /home/backup/{vmName}/usr
-cp -r /home/ /home/backup/{vmName}/home
+cp -r /usr/* /home/backup/{vmName}/usr
+cp -r /home/* /home/backup/{vmName}/home
 """
     return script
 
