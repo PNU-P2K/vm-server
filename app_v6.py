@@ -231,6 +231,8 @@ def stop():
     os.popen(f"mkdir /home/backup/{vmName}")
     os.popen(f"mkdir /home/backup/{vmName}/usr")
     os.popen(f"mkdir /home/backup/{vmName}/home")
+    print("pod: "+podName)
+    print("name: "+namespace)
     stopScript = func.createStopScript(namespace, podName, vmName)
     scriptFilePath = "/home/stop/"+vmName+".sh"
     with open(scriptFilePath, 'w') as scriptFile:
