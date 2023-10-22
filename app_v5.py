@@ -382,28 +382,28 @@ def load() :
     requestDTO = request.get_json()
     print("[load requestDTO] ", requestDTO)
     userId, port, pwd, imageId = str(requestDTO['id']), str(requestDTO['port']), str(requestDTO['password']), str(requestDTO['key'])
-    deImageId = aes.decrypt(imageId)
-
-    stream1 = os.popen(createContainerCmd(port, pwd, deImageId))
-    newContainerId = stream1.read()[:12]
-    enContainerId = aes.encrypt(newContainerId)
-
-    stream2 = os.popen(createImgCmd(newContainerId, userId, port))
-    newImageId = stream2.read()[7:20]
-    enImageId = aes.encrypt(newImageId)
-
+    loadKey = str(requestDTO['key'])
+    # deImageId = aes.decrypt(imageId)
+    deloadKey = aes.decrypt(loadKey)
     scope, control = str(requestDTO['scope']), str(requestDTO['control'])
     vmName = "vm"+port
-    scriptPath = "/dockerstartup/start.sh"
     nodePort = str(requestDTO['nodePort'])
     imagePath = str(requestDTO['imagePath'])
 
-    os.popen(startContainerCmd(newContainerId))
-    os.popen(copyScriptToContainer(newContainerId))
-    os.popen(stopContainerCmd(newContainerId))
+    # stream1 = os.popen(createContainerCmd(port, pwd, deImageId))
+    # newContainerId = stream1.read()[:12]
+    # enContainerId = aes.encrypt(newContainerId)
+
+    # stream2 = os.popen(createImgCmd(newContainerId, userId, port))
+    # newImageId = stream2.read()[7:20]
+    # enImageId = aes.encrypt(newImageId)
+
+    # os.popen(startContainerCmd(newContainerId))
+    # os.popen(copyScriptToContainer(newContainerId))
+    # os.popen(stopContainerCmd(newContainerId))
 
     # Depolyment yaml 파일 생성 
-    deploymentPodYaml = generateDeploymentPodYaml(vmName, vmName, imagePath, port)
+    deploymentPodYaml = generateDeploymentPodYaml(vmName, vmName, deloadKey, port)
     deploymentFilePath = "/home/yaml/"+vmName+"Deployment.yaml"
     with open(deploymentFilePath, 'w') as deploymentYamlFile:
         deploymentYamlFile.write(deploymentPodYaml) 
@@ -413,11 +413,25 @@ def load() :
     serviceFilePath = "/home/yaml/"+vmName+"Service.yaml"
     with open(serviceFilePath, 'w') as serviceYamlFile:
         serviceYamlFile.write(servicePodYaml)
+        
+    print(deploymentPodYaml)
+    print(servicePodYaml)
+
+    os.popen(applyPodCmd(deploymentFilePath))
+    os.popen(applyPodCmd(serviceFilePath))
+
+    nodeList = extractNodeInfo()
+    time.sleep(60)
+    externalNodeIp = extractNodeIpOfPod(nodeList)
+
+    print("nodes: ", nodeList)
+    print("externalIp: ", externalNodeIp)
 
     response = {
-        'containerId' : enContainerId,
-        'imageId' : enImageId
-    }
+            'port': port,
+            'externalNodeIp': externalNodeIp
+        }
+
 
     return jsonify(response), 200
 
@@ -518,7 +532,8 @@ def save() :
     vmName = "vm"+port
     imagePath = "registry.p2kcloud.com/base/"+userId
     podName = os.popen(getPodName(port)).read()[4:-1]
-
+    loadKey = aes.encrypt(imagePath+":"+port)
+    
     backupScript = createBackupScript(vmName, imagePath, port)
     scriptFilePath = "/tmp/script/backup/"+vmName+".sh"
     with open(scriptFilePath, 'w') as scriptFile:
@@ -528,7 +543,8 @@ def save() :
 
     accessContainer = f"kubectl exec -it {podName} bash /tmp/script/backup/{vmName}.sh --kubeconfig /root/kubeconfig.yml"
     os.popen(accessContainer)
-    # 
+    
+    
 
     stream1 = os.popen(createImgCmd(deContainerId, userId, port))
     newImageId = stream1.read()[7:20]
@@ -542,6 +558,7 @@ def save() :
     print("3 : ", stream3.read())
     time.sleep(3)
 
+
     print("newImageId : ", newImageId)
     print("ennewImageId : ", enImageId)
     print("path: "+imagePath+":"+port)
@@ -549,7 +566,7 @@ def save() :
     response = {
             'containerId' : containerId,
             'imageId' : enImageId, 
-            'imagePath' : imagePath+":"+port
+            'loadKey' : loadKey
         }
 
     return jsonify(response), 200
