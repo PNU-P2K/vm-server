@@ -221,13 +221,13 @@ def deleteYamlFile(yamlFilePath):
     return "rm " + yamlFilePath
 
 # Pod 백업 스크립트 작성 함수 - Stop에서 사용됨 
-def createStopScript(podName):
+def createStopScript(podName, vmName):
     
     # 중지 스크립트 내용 생성
     script = f"""#!/bin/bash
 
 # k8s 파일 복사 
-kubectl cp {podName}:/var/backups/{podName} /home/backup/{podName}
+kubectl cp {podName}:/var/backups/{vmName} /home/backup/{vmName}
 """
 
     return script

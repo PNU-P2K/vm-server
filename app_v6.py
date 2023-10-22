@@ -228,7 +228,7 @@ def stop():
     os.popen(accessContainer)'''
 
     # backup을 위한 stopScript (나중에 저장할 때 쓰이기 위함) - 실제 정지시키는 역할이 아님 
-    stopScript = func.createStopScript(vmName)
+    stopScript = func.createStopScript(podName, vmName)
     scriptFilePath = "/home/stop/"+vmName+".sh"
     with open(scriptFilePath, 'w') as scriptFile:
         scriptFile.write(stopScript)
