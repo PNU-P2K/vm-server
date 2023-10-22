@@ -298,8 +298,8 @@ def createDockerfile(baseImage, sourcePath):
     return dockerfileContent
 
 # Dockerfile build 함수 
-def buildDockerImage(userId, port, dockerFilePath):
-    os.popen(f"docker build -t {userId}:{port} {dockerFilePath}")
+def buildDockerImage(userId, port, dockerFilePath, vmName):
+    os.popen(f"docker build -t {userId}:{port} -f {dockerFilePath}{vmName} {dockerFilePath}")
     return f"{userId}:{port}"
 
 def deleteScript():

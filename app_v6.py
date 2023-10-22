@@ -276,24 +276,25 @@ def save() :
 
     namespace = os.popen(func.getPodNameSpace(podName)).read()[:-1]
     
+    '''
     backupScript = func.createBackupScript(vmName, imagePath, port)
     scriptFilePath = "/tmp/script/backup/"+vmName+".sh"
     with open(scriptFilePath, 'w') as scriptFile:
         scriptFile.write(backupScript)
 
-    print("save script: "+backupScript)
+    print("save script: "+backupScript)'''
 
     accessContainer = f"kubectl cp {namespace}/{podName}:/home/ /home/backup/{vmName} --kubeconfig /root/kubeconfig.yml"
     os.popen(accessContainer)
 
     dockerFileContent = func.createDockerfile("registry.p2kcloud.com/base/1:6081", f"/home/backup/{vmName}")
-    dockerFilePath = "/home/dockerFile/"+vmName
+    dockerFilePath = "/home/dockerFile/"
     with open(dockerFilePath, 'w') as dockerFile:
         dockerFile.write(dockerFileContent)
 
     print("dockerfile: "+dockerFileContent)
     
-    userPath = func.buildDockerImage(userId, port, dockerFilePath)
+    userPath = func.buildDockerImage(imagePath, port, dockerFilePath, vmName)
 
     func.pushImgCmd(userId, port)
 
