@@ -202,12 +202,19 @@ PORT="{PORT}"
 
 # 컨테이너 상태를 스냅샷으로 저장 
 docker commit $CONTAINERID $IMAGEPATH:$PORT  
+# 컨테이너 이미지 tag
+docker tag $IMAGEPATH:$PORT $IMAGEPATH:$PORT
 # 컨테이너 상태를 harbor로 저장 
 docker push $IMAGEPATH:$PORT
 """
 
     return script
 
+def deleteStopScript(scriptPath):
+    return "rm " + scriptPath
+
+def deleteBackUpScript(scriptPath):
+    return "rm " + scriptPath
 
 #===================
 # pod namespace 가져오기 
