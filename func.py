@@ -232,22 +232,6 @@ cp -r /home/* /home/backup/{vmName}/home
 """
     return script
 
-# Pod 백업 스크립트 작성 함수 - Stop에서 사용됨 
-def createStopScript2(podName, vmName):
-    
-    # 중지 스크립트 내용 생성
-    script = f"""#!/bin/bash
-
-# k8s 파일 복사 (pod 내부)
-kubectl cp /usr/ /home/backup/{vmName}/usr
-kubectl cp /home/ /home/backup/{vmName}/home
-
-# k8s 파일 복사 
-kubectl cp {namespace}/{podName}:/var/backups/{vmName} /home/backup/{vmName}
-"""
-
-    return script
-
 # Pod 백업 스크립트 작성 함수 
 def createBackupScript(containerName, imagePath, port):
 

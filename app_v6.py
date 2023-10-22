@@ -241,7 +241,7 @@ def stop():
     print("stop script: "+stopScript)
 
 
-    accessContainer = f"kubectl cp {namespace}/{podName}:/var/backups/{vmName} /home/backup/{vmName} --kubeconfig /root/kubeconfig.yml"
+    accessContainer = f"kubectl cp {namespace}/{podName}:/home/ /home/backup/{vmName} --kubeconfig /root/kubeconfig.yml"
     os.popen(accessContainer)
 
     func.deleteDeployPodCmd(vmName)
@@ -273,6 +273,8 @@ def save() :
     imagePath = "registry.p2kcloud.com/base/"+userId
     podName = os.popen(func.getPodName(port)).read()[4:-1]
     loadKey = func.aes.encrypt(imagePath+":"+port)
+
+    namespace = os.popen(func.getPodNameSpace(podName)).read()[:-1]
     
     backupScript = func.createBackupScript(vmName, imagePath, port)
     scriptFilePath = "/tmp/script/backup/"+vmName+".sh"
@@ -281,9 +283,20 @@ def save() :
 
     print("save script: "+backupScript)
 
-    accessContainer = f"kubectl exec -it {podName} bash /tmp/script/backup/{vmName}.sh --kubeconfig /root/kubeconfig.yml"
+    accessContainer = f"kubectl cp {namespace}/{podName}:/home/ /home/backup/{vmName} --kubeconfig /root/kubeconfig.yml"
     os.popen(accessContainer)
+
+    dockerFileContent = func.createDockerfile("registry.p2kcloud.com/base/1:6081", f"/home/backup/{vmName}")
+    dockerFilePath = "/home/dockerFile/"+vmName
+    with open(dockerFilePath, 'w') as dockerFile:
+        dockerFile.write(dockerFileContent)
+
+    print("dockerfile: "+dockerFileContent)
     
+    userPath = func.buildDockerImage(userId, port, dockerFilePath)
+
+    func.pushImgCmd(userId, port)
+
     time.sleep(2)
 
     print("path: "+imagePath+":"+port)
