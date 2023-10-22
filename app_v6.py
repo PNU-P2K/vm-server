@@ -255,7 +255,7 @@ def save() :
     os.popen(accessContainer)
 
     #dockerFileContent = func.createDockerfile("kasmweb/desktop:1.14.0", f"/home/backup/{vmName}")
-    dockerFileContent = func.createDockerfile("registry.p2kcloud.com/base/1", f"/home/backup/{vmName}")
+    dockerFileContent = func.createDockerfile("registry.p2kcloud.com/base/1:6081", f"/home/backup/{vmName}")
     dockerFilePath = "/home/dockerFile/"+vmName
     with open(dockerFilePath, 'w') as dockerFile:
         dockerFile.write(dockerFileContent)
