@@ -26,9 +26,9 @@ def create():
     time.sleep(5)
     enContainerId = func.aes.encrypt(containerId) # containerId 암호화
 
-    stream2 = os.popen(func.createImgCmd(containerId, userId, port))
-    imageId = stream2.read()[7:20]
-    enImageId = func.aes.encrypt(imageId)  # imageId 암호화
+    #stream2 = os.popen(func.createImgCmd(containerId, userId, port))
+    #imageId = stream2.read()[7:20]
+    #enImageId = func.aes.encrypt(imageId)  # imageId 암호화
     vmName = "vm"+port
     scriptPath = "/dockerstartup/start.sh" 
     nodePort = str(requestDTO['nodePort']) 
@@ -80,7 +80,7 @@ def create():
     response = {
             'port': port,
             'containerId' : enContainerId,
-            'imageId' : enImageId,
+            'imageId' : enContainerId,#enImageId,
             'externalNodeIp': externalNodeIp
         }
 
