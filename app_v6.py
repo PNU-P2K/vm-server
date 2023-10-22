@@ -257,6 +257,7 @@ def save() :
     os.popen(accessContainer)
 
     dockerFileContent = func.createDockerfile("registry.p2kcloud.com/base/1:6081", f"/home/backup/{vmName}")
+    os.popen(f"mkdir /home/dockerFile/{vmName}")
     dockerFilePath = "/home/dockerFile/"+vmName+"/Dockerfile"
     with open(dockerFilePath, 'w') as dockerFile:
         dockerFile.write(dockerFileContent)
