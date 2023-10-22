@@ -303,6 +303,7 @@ def delete():
     os.popen(func.deleteYamlFile(deploymentFilePath))
     os.popen(func.deleteYamlFile(serviceFilePath))
     os.popen(f"rm -rf /home/backup/{vmName}")
+    os.popen(f"rm -rf /home/dockerFile/{vmName}")
 
     os.popen(func.deletePVPodCmd(vmName))
     os.popen(func.deletePVCPodCmd(vmName))
