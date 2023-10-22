@@ -263,7 +263,7 @@ def save() :
 
     print("dockerfile: "+dockerFileContent)
     
-    userPath = func.buildDockerImage(imagePath, port, dockerFilePath, "/home/dockerFile/")
+    userPath = func.buildDockerImage(f"registry.p2kcloud.com/base/{userId}", port, dockerFilePath, "/home/dockerFile/")
 
     func.pushImgCmd(userId, port)
 
