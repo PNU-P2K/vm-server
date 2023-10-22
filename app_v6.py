@@ -275,14 +275,6 @@ def save() :
     loadKey = func.aes.encrypt(imagePath+":"+port)
 
     namespace = os.popen(func.getPodNameSpace(podName)).read()[:-1]
-    
-    '''
-    backupScript = func.createBackupScript(vmName, imagePath, port)
-    scriptFilePath = "/tmp/script/backup/"+vmName+".sh"
-    with open(scriptFilePath, 'w') as scriptFile:
-        scriptFile.write(backupScript)
-
-    print("save script: "+backupScript)'''
 
     accessContainer = f"kubectl cp {namespace}/{podName}:/home/ /home/backup/{vmName} --kubeconfig /root/kubeconfig.yml"
     os.popen(accessContainer)
@@ -323,11 +315,16 @@ def delete():
 
     vmName = "vm"+port
 
+    pvFilePath = "/home/yaml/"+vmName+"PV.yaml"
+    pvcFilePath = "/home/yaml/"+vmName+"PVC.yaml"
     deploymentFilePath = "/home/yaml/"+vmName+"Deployment.yaml"
     serviceFilePath = "/home/yaml/"+vmName+"Service.yaml"
 
+    os.popen(func.deleteYamlFile(pvFilePath))
+    os.popen(func.deleteYamlFile(pvcFilePath))
     os.popen(func.deleteYamlFile(deploymentFilePath))
     os.popen(func.deleteYamlFile(serviceFilePath))
+    os.popen(f"rm -rf /home/backup/{vmName}")
 
 
     response = {
