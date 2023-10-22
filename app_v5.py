@@ -473,6 +473,8 @@ def start():
     changeVncScopeAndControlCmd = "kubectl exec -it "+podName+" bash /tmp/start.sh "+scope+" "+control+" "+pwd+" --kubeconfig /root/kubeconfig.yml"
     os.popen(changeVncScopeAndControlCmd)
 
+    time.sleep(2)
+
     response = {
             'port' : port,
             'containerId' : containerId
@@ -505,6 +507,7 @@ def stop():
 
     accessContainer = f"kubectl exec -it {podName} bash /tmp/script/stop/{vmName}.sh --kubeconfig /root/kubeconfig.yml"
     os.popen(accessContainer)
+    time.sleep(2)
 
     print("end")
 
@@ -544,6 +547,7 @@ def save() :
     accessContainer = f"kubectl exec -it {podName} bash /tmp/script/backup/{vmName}.sh --kubeconfig /root/kubeconfig.yml"
     os.popen(accessContainer)
     
+    time.sleep(2)
 
     # stream1 = os.popen(createImgCmd(deContainerId, userId, port))
     # newImageId = stream1.read()[7:20]
