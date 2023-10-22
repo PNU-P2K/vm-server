@@ -267,7 +267,7 @@ def save() :
     time.sleep(10)
 
     print("push start")
-    os.popen(func.pushImgCmd(userId, port))
+    os.popen(f"docker push registry.p2kcloud.com/base/{userId}:{port}")
     print("push end")
 
     time.sleep(2)
