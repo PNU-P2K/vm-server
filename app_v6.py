@@ -39,13 +39,13 @@ def create():
     os.popen(func.stopContainerCmd(containerId))
 
     # PV yaml 파일 생성 
-    pvPodYaml = func.generatePVYaml(vmName, vmName, vmName)
+    pvPodYaml = func.generatePVPodYaml(vmName, vmName, vmName)
     pvFilePath = "/home/yaml/"+vmName+"PV.yaml"
     with open(pvFilePath, 'w') as pvYamlFile:
         pvYamlFile.write(pvPodYaml)
 
     # PVC yaml 파일 생성 
-    pvcPodYaml = func.generatePVCYaml(vmName, vmName)
+    pvcPodYaml = func.generatePVCPodYaml(vmName, vmName)
     pvcFilePath = "/home/yaml/"+vmName+"PVC.yaml"
     with open(pvcFilePath, 'w') as pvcYamlFile:
         pvcYamlFile.write(pvcPodYaml)
@@ -103,13 +103,13 @@ def load() :
     imagePath = str(requestDTO['imagePath'])
 
     # PV yaml 파일 생성 
-    pvPodYaml = func.generatePVYaml(vmName, vmName, vmName)
+    pvPodYaml = func.generatePVPodYaml(vmName, vmName, vmName)
     pvFilePath = "/home/yaml/"+vmName+"PV.yaml"
     with open(pvFilePath, 'w') as pvYamlFile:
         pvYamlFile.write(pvPodYaml)
 
     # PVC yaml 파일 생성 
-    pvcPodYaml = func.generatePVCYaml(vmName, vmName)
+    pvcPodYaml = func.generatePVCPodYaml(vmName, vmName)
     pvcFilePath = "/home/yaml/"+vmName+"PVC.yaml"
     with open(pvcFilePath, 'w') as pvcYamlFile:
         pvcYamlFile.write(pvcPodYaml)
@@ -228,7 +228,8 @@ def stop():
     os.popen(accessContainer)'''
 
     # backup을 위한 stopScript (나중에 저장할 때 쓰이기 위함) - 실제 정지시키는 역할이 아님 
-    os.popen(f"mkdir /home/backup/{vmName}")
+    os.popen(f"mkdir /home/backup/{vmName}/usr")
+    os.popen(f"mkdir /home/backup/{vmName}/home")
     stopScript = func.createStopScript(namespace, podName, vmName)
     scriptFilePath = "/home/stop/"+vmName+".sh"
     with open(scriptFilePath, 'w') as scriptFile:
