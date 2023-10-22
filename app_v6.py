@@ -228,6 +228,7 @@ def stop():
     os.popen(accessContainer)'''
 
     # backup을 위한 stopScript (나중에 저장할 때 쓰이기 위함) - 실제 정지시키는 역할이 아님 
+    os.popen(f"mkdir /home/backup/{vmName}")
     os.popen(f"mkdir /home/backup/{vmName}/usr")
     os.popen(f"mkdir /home/backup/{vmName}/home")
     stopScript = func.createStopScript(namespace, podName, vmName)
