@@ -45,6 +45,29 @@ def generatePVPodYaml(pvName, storageClassName, pathName) :
 
     return PVYaml
 
+# pvc pod 만드는 함수
+def generatePVPodYaml(pvcName, storageClassName) : 
+    PVCDefinition = {
+        "apiVersion": "apps/v1",
+        "kind": "PersistentVolumeClaim",
+        "metadata": {"name": pvcName}, 
+        "spec": {
+            "volumeMode": "Filesystem",
+            "accessModes": ["ReadWriteOnce"],
+            "storageClassName": storageClassName,
+            "resources": {
+                "requests": {
+                    "storage": "500Mi"
+                }
+            }
+        }
+    }
+
+    # YAML로 변환하여 문자열로 반환합니다.
+    PVCYaml = yaml.dump(PVCDefinition, default_flow_style=False)
+
+    return PVCYaml
+
 # deployment pod 만드는 함수
 def generateDeploymentPodYaml(deploymentName, containerName, imageName, servicePort) : 
     deploymentDefinition = {
