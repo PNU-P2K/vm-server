@@ -38,6 +38,18 @@ def create():
     os.popen(func.copyScriptToContainer(containerId))
     os.popen(func.stopContainerCmd(containerId))
 
+    # PV yaml 파일 생성 
+    pvPodYaml = func.generatePVYaml(vmName, vmName, vmName)
+    pvFilePath = "/home/yaml/"+vmName+"PV.yaml"
+    with open(pvFilePath, 'w') as pvYamlFile:
+        pvYamlFile.write(pvPodYaml)
+
+    # PVC yaml 파일 생성 
+    pvcPodYaml = func.generatePVCYaml(vmName, vmName)
+    pvcFilePath = "/home/yaml/"+vmName+"PVC.yaml"
+    with open(pvcFilePath, 'w') as pvcYamlFile:
+        pvcYamlFile.write(pvcPodYaml)
+
     # Depolyment yaml 파일 생성 
     deploymentPodYaml = func.generateDeploymentPodYaml(vmName, vmName, imagePath, port)
     deploymentFilePath = "/home/yaml/"+vmName+"Deployment.yaml"
@@ -53,6 +65,8 @@ def create():
     print(deploymentPodYaml)
     print(servicePodYaml)
 
+    os.popen(func.applyPodCmd(pvFilePath))
+    os.popen(func.applyPodCmd(pvcFilePath))
     os.popen(func.applyPodCmd(deploymentFilePath))
     os.popen(func.applyPodCmd(serviceFilePath))
 
@@ -88,6 +102,18 @@ def load() :
     nodePort = str(requestDTO['nodePort'])
     imagePath = str(requestDTO['imagePath'])
 
+    # PV yaml 파일 생성 
+    pvPodYaml = func.generatePVYaml(vmName, vmName, vmName)
+    pvFilePath = "/home/yaml/"+vmName+"PV.yaml"
+    with open(pvFilePath, 'w') as pvYamlFile:
+        pvYamlFile.write(pvPodYaml)
+
+    # PVC yaml 파일 생성 
+    pvcPodYaml = func.generatePVCYaml(vmName, vmName)
+    pvcFilePath = "/home/yaml/"+vmName+"PVC.yaml"
+    with open(pvcFilePath, 'w') as pvcYamlFile:
+        pvcYamlFile.write(pvcPodYaml)
+
     # Depolyment yaml 파일 생성 
     deploymentPodYaml = func.generateDeploymentPodYaml(vmName, vmName, deloadKey, port)
     deploymentFilePath = "/home/yaml/"+vmName+"Deployment.yaml"
@@ -103,6 +129,8 @@ def load() :
     print(deploymentPodYaml)
     print(servicePodYaml)
 
+    os.popen(func.applyPodCmd(pvFilePath))
+    os.popen(func.applyPodCmd(pvcFilePath))
     os.popen(func.applyPodCmd(deploymentFilePath))
     os.popen(func.applyPodCmd(serviceFilePath))
 
@@ -138,9 +166,13 @@ def start():
 
     vmName = "vm"+port
 
+    pvFilePath = "/home/yaml/"+vmName+"PV.yaml"
+    pvcFilePath = "/home/yaml/"+vmName+"PVC.yaml"
     deploymentFilePath = "/home/yaml/"+vmName+"Deployment.yaml"
     serviceFilePath = "/home/yaml/"+vmName+"Service.yaml"
 
+    os.popen(func.applyPodCmd(pvFilePath))
+    os.popen(func.applyPodCmd(pvcFilePath))
     os.popen(func.applyPodCmd(deploymentFilePath))
     os.popen(func.applyPodCmd(serviceFilePath))
 
