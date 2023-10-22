@@ -256,7 +256,7 @@ def save() :
     accessContainer = f"kubectl cp {namespace}/{podName}:/home/ /home/backup/{vmName} --kubeconfig /root/kubeconfig.yml"
     os.popen(accessContainer)
 
-    dockerFileContent = func.createDockerfile("registry.p2kcloud.com/base/1:6081", f"/home/backup/{vmName}")
+    dockerFileContent = func.createDockerfile("kasmweb/desktop:1.14.0-rolling", f"/home/backup/{vmName}")
     dockerFilePath = "/home/dockerFile/"+vmName
     with open(dockerFilePath, 'w') as dockerFile:
         dockerFile.write(dockerFileContent)
