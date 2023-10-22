@@ -267,7 +267,7 @@ def save() :
     time.sleep(10)
 
     print("push start")
-    func.pushImgCmd(userId, port)
+    os.popen(func.pushImgCmd(userId, port))
     print("push end")
 
     time.sleep(2)
