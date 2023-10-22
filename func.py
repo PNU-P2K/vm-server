@@ -220,21 +220,14 @@ def deleteServicePodCmd(serviceName):
 def deleteYamlFile(yamlFilePath):
     return "rm " + yamlFilePath
 
-# Pod 백업 스크립트 작성 함수 
-def createStopScript(containerName):
-
-    # 백업 대상 Pod의 컨테이너 설정
-    CONTAINERNAME = containerName
+# Pod 백업 스크립트 작성 함수 - Stop에서 사용됨 
+def createStopScript(podName):
     
     # 중지 스크립트 내용 생성
     script = f"""#!/bin/bash
 
-# 백업 대상 Pod와 컨테이너 설정
-CONTAINERNAME="{CONTAINERNAME}"
-CONTAINERID="$(docker ps -qf "name=$CONTAINERNAME")"
-
-# 컨테이너 상태 중지 
-docker stop $CONTAINERID 
+# k8s 파일 복사 
+kubectl cp {podName}:/var/backup/{podName} /home/backup/{podName}
 """
 
     return script

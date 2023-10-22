@@ -227,6 +227,18 @@ def stop():
     accessContainer = f"kubectl exec -it {podName} bash /tmp/script/stop/{vmName}.sh --kubeconfig /root/kubeconfig.yml"
     os.popen(accessContainer)'''
 
+    # backup을 위한 stopScript (나중에 저장할 때 쓰이기 위함) - 실제 정지시키는 역할이 아님 
+    stopScript = func.createBackupScript()
+    scriptFilePath = "/home/stop/"+vmName+".sh"
+    with open(scriptFilePath, 'w') as scriptFile:
+        scriptFile.write(stopScript)
+
+    print("stop script: "+stopScript)
+
+    accessContainer = f"kubectl exec -it {podName} bash /home/stop/{vmName}.sh --kubeconfig /root/kubeconfig.yml"
+    os.popen(accessContainer)
+
+
     func.deleteDeployPodCmd(vmName)
     func.deleteServicePodCmd(vmName)
 
