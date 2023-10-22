@@ -202,6 +202,8 @@ def start():
 
 
 # spring 서버에서 컨테이너 중지 요청이 왔을 때, 컨테이너 중지
+# pod안의 내용을 sh로 copy하고 -> 나중에 save하게 되면 dockerfile 작성할 때 쓰임 
+# pod를 지움 
 @app.route('/stop', methods=['POST'])
 def stop():
 
@@ -214,6 +216,7 @@ def stop():
     namespace = os.popen(func.getPodNameSpace(podName)).read()[:-1]
 
     print("start")
+    '''
     stopScript = func.createStopScript(vmName)
     scriptFilePath = "/tmp/script/stop/"+vmName+".sh"
     with open(scriptFilePath, 'w') as scriptFile:
@@ -222,7 +225,11 @@ def stop():
     print("stop script: "+stopScript)
 
     accessContainer = f"kubectl exec -it {podName} bash /tmp/script/stop/{vmName}.sh --kubeconfig /root/kubeconfig.yml"
-    os.popen(accessContainer)
+    os.popen(accessContainer)'''
+
+    func.deleteDeployPodCmd(vmName)
+    func.deleteServicePodCmd(vmName)
+
     time.sleep(2)
 
     print("end")
