@@ -46,7 +46,7 @@ def generatePVPodYaml(pvName, storageClassName, pathName) :
     return PVYaml
 
 # pvc pod 만드는 함수
-def generatePVPodYaml(pvcName, storageClassName) : 
+def generatePVCPodYaml(pvcName, storageClassName) : 
     PVCDefinition = {
         "apiVersion": "apps/v1",
         "kind": "PersistentVolumeClaim",
