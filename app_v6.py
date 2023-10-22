@@ -202,8 +202,6 @@ def start():
 
 
 # spring 서버에서 컨테이너 중지 요청이 왔을 때, 컨테이너 중지
-# pod안의 내용을 sh로 copy하고 -> 나중에 save하게 되면 dockerfile 작성할 때 쓰임 
-# pod를 지움 
 @app.route('/stop', methods=['POST'])
 def stop():
 

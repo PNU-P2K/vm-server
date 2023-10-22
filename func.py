@@ -228,53 +228,6 @@ def deleteServicePodCmd(serviceName):
 def deleteYamlFile(yamlFilePath):
     return "rm " + yamlFilePath
 
-# Pod 백업 스크립트 작성 함수 - Stop에서 사용됨 
-def createStopScript(namespace, podName, vmName):
-    
-    # 중지 스크립트 내용 생성
-    script = f"""#!/bin/bash
-
-# k8s 파일 복사 (pod 내부)
-cp -r /usr/* /home/backup/{vmName}/usr
-cp -r /home/* /home/backup/{vmName}/home
-"""
-    return script
-
-# Pod 백업 스크립트 작성 함수 
-def createBackupScript(containerName, imagePath, port):
-
-    # 백업 대상 Pod의 컨테이너 설정
-    CONTAINERNAME = containerName
-    IMAGEPATH = imagePath
-    PORT = port
-    
-    # 백업 스크립트 내용 생성
-    script = f"""#!/bin/bash
-
-# 백업 대상 Pod와 컨테이너 설정
-CONTAINERNAME="{CONTAINERNAME}"
-CONTAINERID="$(docker ps -qf "name=$CONTAINERNAME")"
-IMAGEPATH="{IMAGEPATH}"
-PORT="{PORT}"
-
-
-
-# 컨테이너 상태를 스냅샷으로 저장 
-docker commit $CONTAINERID $IMAGEPATH:$PORT  
-# 컨테이너 이미지 tag
-docker tag $IMAGEPATH:$PORT $IMAGEPATH:$PORT
-# 컨테이너 상태를 harbor로 저장 
-docker push $IMAGEPATH:$PORT
-"""
-
-    return script
-
-def deleteStopScript(scriptPath):
-    return "rm " + scriptPath
-
-def deleteBackUpScript(scriptPath):
-    return "rm " + scriptPath
-
 #===================
 # pod namespace 가져오기 
 def getPodNameSpace(podName):
