@@ -69,7 +69,7 @@ def generatePVCPodYaml(pvcName, storageClassName) :
     return PVCYaml
 
 # deployment pod 만드는 함수
-def generateDeploymentPodYaml(deploymentName, containerName, imageName, servicePort) : 
+def generateDeploymentPodYaml(deploymentName, containerName, imageName, servicePort, pathName, volumeName, pvcName) : 
     deploymentDefinition = {
         "apiVersion": "apps/v1",
         "kind": "Deployment",
@@ -95,9 +95,19 @@ def generateDeploymentPodYaml(deploymentName, containerName, imageName, serviceP
                             "name": containerName, 
                             "image": imageName, 
                             "ports": [{"containerPort": 6901}], # container 포트는 이미지 받을 때부터 열려있었던 포트인 6901로 접속해야 가능 
+                            "volumeMounts": [{
+                                "mountPath": "/var/backup/"+pathName,
+                                "name": volumeName    
+                            }]
                         } 
                     ], 
-                    "imagePullSecrets": [{"name": "harbor"}] # harbor라는 이름의 kubeconfig.yaml 파일 
+                    "imagePullSecrets": [{"name": "harbor"}], # harbor라는 이름의 kubeconfig.yaml 파일 
+                    "volumes": [{
+                        "name": volumeName,
+                        "persistentVolumeClaim": {
+                            "claimName": pvcName
+                        }
+                    }]
                 }
             }
         }
