@@ -20,6 +20,31 @@ extractNodeInfos = dict()
 extractPodInfos = dict()
 extractNodeCPUs = dict()
 
+# pv pod 만드는 함수
+def generatePVPodYaml(pvName, storageClassName, pathName) : 
+    PVDefinition = {
+        "apiVersion": "apps/v1",
+        "kind": "PersistentVolume",
+        "metadata": {"name": pvName}, 
+        "spec": {
+            "capacity": {
+                "storage": "500Mi",
+            },
+            "volumeMode": "Filesystem",
+            "accessModes": ["ReadWriteOnce"],
+            "storageClassName": storageClassName,
+            "persistentVolumeReclaimPolicy": "Delete",
+            "hostPath": {
+                "path": "/tmp/backup/"+pathName
+            }
+        }
+    }
+
+    # YAML로 변환하여 문자열로 반환합니다.
+    PVYaml = yaml.dump(PVDefinition, default_flow_style=False)
+
+    return PVYaml
+
 # deployment pod 만드는 함수
 def generateDeploymentPodYaml(deploymentName, containerName, imageName, servicePort) : 
     deploymentDefinition = {
