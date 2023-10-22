@@ -208,6 +208,14 @@ def getPodName(port) :
 def copyScriptToPod(podName, containerName) :
     return "kubectl cp /home/ubuntu/start.sh "+podName+":/tmp/ -c "+containerName+" --kubeconfig /root/kubeconfig.yml"
 
+# pv Pod 지우기  
+def deletePVPodCmd(pvName): 
+    return "kubectl delete pv " + pvName + " --kubeconfig /root/kubeconfig.yml"
+
+# pvc Pod 지우기  
+def deletePVCPodCmd(pvcName): 
+    return "kubectl delete pvc " + pvcName + " --kubeconfig /root/kubeconfig.yml"
+
 # deployment Pod 지우기  
 def deleteDeployPodCmd(deploymentName): 
     return "kubectl delete deployment " + deploymentName + " --kubeconfig /root/kubeconfig.yml"

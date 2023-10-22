@@ -326,6 +326,11 @@ def delete():
     os.popen(func.deleteYamlFile(serviceFilePath))
     os.popen(f"rm -rf /home/backup/{vmName}")
 
+    os.popen(func.deletePVPodCmd(vmName))
+    os.popen(func.deletePVCPodCmd(vmName))
+    os.popen(func.deleteDeployPodCmd(vmName))
+    os.popen(func.deleteServicePodCmd(vmName))
+
 
     response = {
             'port' : port,
