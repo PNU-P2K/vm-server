@@ -383,7 +383,7 @@ def load() :
     print("[load requestDTO] ", requestDTO)
     userId, port, pwd, imageId = str(requestDTO['id']), str(requestDTO['port']), str(requestDTO['password']), str(requestDTO['key'])
     loadKey = str(requestDTO['key'])
-    # deImageId = aes.decrypt(imageId)
+    #deImageId = aes.decrypt(imageId)
     deloadKey = aes.decrypt(loadKey)
     scope, control = str(requestDTO['scope']), str(requestDTO['control'])
     vmName = "vm"+port
@@ -447,7 +447,7 @@ def start():
     requestDTO = request.get_json()
     print("[start requestDTO] ", requestDTO)
     port, containerId = str(requestDTO['port']), str(requestDTO['containerId'])
-    deContainerId = aes.decrypt(containerId)
+    #deContainerId = aes.decrypt(containerId)
     pwd = str(requestDTO['password'])
     scope, control = str(requestDTO['scope']), str(requestDTO['control'])
 
@@ -489,7 +489,7 @@ def stop():
     requestDTO = request.get_json()
     print("[stop requestDTO] ", requestDTO)
     port, containerId = str(requestDTO['port']), str(requestDTO['containerId'])
-    deContainerId = aes.decrypt(containerId)
+    #deContainerId = aes.decrypt(containerId)
     vmName = "vm"+port # containerName과 동일 
 
     podName = os.popen(getPodName(port)).read()[4:-1]
@@ -525,7 +525,7 @@ def save() :
     print("[save requestDTO] ", requestDTO)
     userId, port, pwd = str(requestDTO['id']), str(requestDTO['port']), str(requestDTO['pwd'])
     containerId, imageId = str(requestDTO['containerId']), str(requestDTO['imageId'])
-    deContainerId, deImageId = aes.decrypt(containerId), aes.decrypt(imageId)
+    #deContainerId, deImageId = aes.decrypt(containerId), aes.decrypt(imageId)
 
     # 백업 데이터로 dockerfile 만들고 build하고 registry push 
 
@@ -544,28 +544,27 @@ def save() :
     accessContainer = f"kubectl exec -it {podName} bash /tmp/script/backup/{vmName}.sh --kubeconfig /root/kubeconfig.yml"
     os.popen(accessContainer)
     
-    
 
-    stream1 = os.popen(createImgCmd(deContainerId, userId, port))
-    newImageId = stream1.read()[7:20]
-    enImageId = aes.encrypt(newImageId)
-    print("1 : ", stream1.read())
+    # stream1 = os.popen(createImgCmd(deContainerId, userId, port))
+    # newImageId = stream1.read()[7:20]
+    # enImageId = aes.encrypt(newImageId)
+    # print("1 : ", stream1.read())
 
-    stream2 = os.popen(deleteImgCmd(deImageId))
-    print("2 : ", stream2.read())
+    # stream2 = os.popen(deleteImgCmd(deImageId))
+    # print("2 : ", stream2.read())
 
-    stream3 = os.popen(pushImgCmd(userId, port))
-    print("3 : ", stream3.read())
-    time.sleep(3)
+    # stream3 = os.popen(pushImgCmd(userId, port))
+    # print("3 : ", stream3.read())
+    # time.sleep(3)
 
 
-    print("newImageId : ", newImageId)
-    print("ennewImageId : ", enImageId)
+    # print("newImageId : ", newImageId)
+    # print("ennewImageId : ", enImageId)
     print("path: "+imagePath+":"+port)
 
     response = {
             'containerId' : containerId,
-            'imageId' : enImageId, 
+            'imageId' : imageId, 
             'loadKey' : loadKey
         }
 
@@ -581,10 +580,10 @@ def delete():
     print("[delete requestDTO] ", requestDTO)
     userId, port = str(requestDTO['id']), str(requestDTO['port'])
     containerId, imageId = str(requestDTO['containerId']), str(requestDTO['imageId'])
-    deContainerId, deImageId = aes.decrypt(containerId), aes.decrypt(imageId)
+    #deContainerId, deImageId = aes.decrypt(containerId), aes.decrypt(imageId)
 
-    os.popen(deleteContainerCmd(deContainerId))
-    os.popen(deleteImgCmd(deImageId))
+    #os.popen(deleteContainerCmd(deContainerId))
+    #os.popen(deleteImgCmd(deImageId))
 
     vmName = "vm"+port
 
