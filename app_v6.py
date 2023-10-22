@@ -258,13 +258,13 @@ def save() :
 
     dockerFileContent = func.createDockerfile("registry.p2kcloud.com/base/1:6081", f"/home/backup/{vmName}")
     os.popen(f"mkdir /home/dockerFile/{vmName}")
-    dockerFilePath = "/home/dockerFile/"+vmName+"/Dockerfile"
+    dockerFilePath = "/home/dockerFile/"+vmName
     with open(dockerFilePath, 'w') as dockerFile:
         dockerFile.write(dockerFileContent)
 
     print("dockerfile: "+dockerFileContent)
     
-    userPath = func.buildDockerImage(imagePath, port, dockerFilePath, "/home/dockerFile/"+vmName)
+    userPath = func.buildDockerImage(imagePath, port, dockerFilePath, "/home/dockerFile/")
 
     func.pushImgCmd(userId, port)
 
@@ -303,7 +303,7 @@ def delete():
     os.popen(func.deleteYamlFile(deploymentFilePath))
     os.popen(func.deleteYamlFile(serviceFilePath))
     os.popen(f"rm -rf /home/backup/{vmName}")
-    os.popen(f"rm -rf /home/dockerFile/{vmName}")
+    os.popen(f"rm /home/dockerFile/{vmName}")
 
     os.popen(func.deletePVPodCmd(vmName))
     os.popen(func.deletePVCPodCmd(vmName))
