@@ -257,13 +257,13 @@ def save() :
     os.popen(accessContainer)
 
     dockerFileContent = func.createDockerfile("registry.p2kcloud.com/base/1:6081", f"/home/backup/{vmName}")
-    dockerFilePath = "/home/dockerFile/"
+    dockerFilePath = "/home/dockerFile/"+vmName+"/Dockerfile"
     with open(dockerFilePath, 'w') as dockerFile:
         dockerFile.write(dockerFileContent)
 
     print("dockerfile: "+dockerFileContent)
     
-    userPath = func.buildDockerImage(imagePath, port, dockerFilePath, vmName)
+    userPath = func.buildDockerImage(imagePath, port, dockerFilePath, "/home/dockerFile/"+vmName)
 
     func.pushImgCmd(userId, port)
 
