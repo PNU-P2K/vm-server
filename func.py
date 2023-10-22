@@ -96,7 +96,7 @@ def generateDeploymentPodYaml(deploymentName, containerName, imageName, serviceP
                             "image": imageName, 
                             "ports": [{"containerPort": 6901}], # container 포트는 이미지 받을 때부터 열려있었던 포트인 6901로 접속해야 가능 
                             "volumeMounts": [{
-                                "mountPath": "/var/backup/"+pathName,
+                                "mountPath": "/var/backups/"+pathName,
                                 "name": volumeName    
                             }]
                         } 
@@ -227,7 +227,7 @@ def createStopScript(podName):
     script = f"""#!/bin/bash
 
 # k8s 파일 복사 
-kubectl cp {podName}:/var/backup/{podName} /home/backup/{podName}
+kubectl cp {podName}:/var/backups/{podName} /home/backup/{podName}
 """
 
     return script
