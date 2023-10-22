@@ -23,7 +23,7 @@ extractNodeCPUs = dict()
 # pv pod 만드는 함수
 def generatePVPodYaml(pvName, storageClassName, pathName) : 
     PVDefinition = {
-        "apiVersion": "apps/v1",
+        "apiVersion": "v1",
         "kind": "PersistentVolume",
         "metadata": {"name": pvName}, 
         "spec": {
@@ -48,7 +48,7 @@ def generatePVPodYaml(pvName, storageClassName, pathName) :
 # pvc pod 만드는 함수
 def generatePVCPodYaml(pvcName, storageClassName) : 
     PVCDefinition = {
-        "apiVersion": "apps/v1",
+        "apiVersion": "v1",
         "kind": "PersistentVolumeClaim",
         "metadata": {"name": pvcName}, 
         "spec": {
