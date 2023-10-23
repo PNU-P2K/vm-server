@@ -219,6 +219,8 @@ def stop():
     print("pod: "+podName)
     print("name: "+namespace)
 
+    os.popen(f"mkdir /home/dockerFile/backup/{vmName}/Desktop")
+
     print("start")
     accessContainer = f"kubectl cp {namespace}/{podName}:/home/kasm-user/Desktop/ /home/dockerFile/backup/{vmName}/Desktop/ --kubeconfig /root/kubeconfig.yml"
     os.popen(accessContainer)
