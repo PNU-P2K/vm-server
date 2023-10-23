@@ -223,7 +223,7 @@ def stop():
     accessContainer = f"kubectl cp {namespace}/{podName}:/home/kasm-user/ /home/dockerFile/backup/{vmName}/ --kubeconfig /root/kubeconfig.yml"
     os.popen(accessContainer)
 
-    time.sleep(600)
+    time.sleep(180)
 
     func.deleteDeployPodCmd(vmName)
     func.deleteServicePodCmd(vmName)
