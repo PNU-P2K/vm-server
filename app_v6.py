@@ -220,10 +220,10 @@ def stop():
     print("name: "+namespace)
 
     os.popen(f"mkdir /home/dockerFile/backup/{vmName}")
-    os.popen(f"mkdir /home/dockerFile/backup/{vmName}/Desktop")
+    #os.popen(f"mkdir /home/dockerFile/backup/{vmName}/Desktop")
 
     print("start")
-    accessContainer = f"kubectl cp {namespace}/{podName}:/home/kasm-user/Desktop/ /home/dockerFile/backup/{vmName}/Desktop/ --kubeconfig /root/kubeconfig.yml"
+    accessContainer = f"kubectl cp {namespace}/{podName}:/home/kasm-user/ /home/dockerFile/backup/{vmName}/ --kubeconfig /root/kubeconfig.yml"
     os.popen(accessContainer)
 
     time.sleep(300)
