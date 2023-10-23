@@ -335,7 +335,7 @@ def stopContainerCmd(containerId) :     # containerid로 컨테이너 중지
     return "docker stop "+containerId
 
 def deleteContainerCmd(containerId) :   # containerid로 컨테이너 삭제
-    return "docker rm "+containerId
+    return "docker rm -f "+containerId
 
 def copyScriptToContainer(containerId) :
     return "docker cp /home/ubuntu/start.sh "+containerId+":/dockerstartup/"
