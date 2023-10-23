@@ -4,7 +4,7 @@ import func
 
 app = Flask(__name__)
 
-baseImageId = '539c2be37d94' # kasm-1.14.0 이미지 - test 서버 
+baseImageId = '1692c5f95a70' # kasm-1.14.0 이미지 - test 서버 
 #baseImageId = '' # kasm-1.14.0 이미지 - 실서버
 #baseImageId = '1692c5f95a70e' # 로컬 이미지
 
