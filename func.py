@@ -254,7 +254,7 @@ def createDockerfile(baseImage, vmName):
     
     # 파일 복사 명령 추가
     #volumeMount = f"VOLUME [{sourcePath}]\n"
-    volumeMount = f"COPY /backup/{vmName}/kasm-user/Desktop/ /home/kasm-user/Desktop/\n"
+    volumeMount = f"COPY /backup/{vmName}/kasm-user/ /home/kasm-user/\n"
 
     dockerfileContent += volumeMount
 
