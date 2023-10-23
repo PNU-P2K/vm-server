@@ -341,7 +341,7 @@ def copyScriptToContainer(containerId) :
     return "docker cp /home/ubuntu/start.sh "+containerId+":/dockerstartup/"
 
 def copyDesktopToContainer(containerId, vmName) :
-    return "sudo docker cp /home/dockerFile/backup/"+vmName+"/Desktop "+containerId+":/home/kasm-user/"
+    return "sudo docker cp /home/dockerFile/backup/"+vmName+"/Desktop/. "+containerId+":/home/kasm-user/Desktop/"
 
 def changeVncScopeAndControl(containerId, scope, control, pwd) :
     return "docker exec -it --user root "+ containerId+" bash /dockerstartup/start.sh "+scope +" "+control+" "+pwd
