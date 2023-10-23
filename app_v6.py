@@ -282,9 +282,12 @@ def save() :
     containerId = stream1.read()[:12]
     time.sleep(5)
     
-    os.popen(func.startContainerCmd(containerId))
+    #os.popen(func.startContainerCmd(containerId))
     
-    os.popen(func.copyDesktopToContainer(containerId, vmName))
+    #os.popen(func.copyDesktopToContainer(containerId, vmName))
+
+    os.popen(f"docker run -v /home/dockerFile/backup/{vmName}/Desktop/:/home/kasm-user/Desktop/ -d registry.p2kcloud.com/base/1/kasmweb:1.14.0")
+
     time.sleep(20)
     
     stream2 = os.popen(func.createImgCmd(containerId, userId, port))
