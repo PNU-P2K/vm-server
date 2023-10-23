@@ -115,7 +115,7 @@ def load() :
         pvcYamlFile.write(pvcPodYaml)
 
     # Depolyment yaml 파일 생성 
-    deploymentPodYaml = func.generateDeploymentPodYaml(vmName, vmName, deloadKey, port, vmName, vmName, vmName)
+    deploymentPodYaml = func.generateLoadDeploymentPodYaml(vmName, vmName, deloadKey, port, vmName, vmName, vmName)
     deploymentFilePath = "/home/yaml/"+vmName+"Deployment.yaml"
     with open(deploymentFilePath, 'w') as deploymentYamlFile:
         deploymentYamlFile.write(deploymentPodYaml) 
