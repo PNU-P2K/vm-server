@@ -219,6 +219,7 @@ def stop():
     print("pod: "+podName)
     print("name: "+namespace)
 
+    os.popen(f"mkdir /home/dockerFile/backup/{vmName}")
     os.popen(f"mkdir /home/dockerFile/backup/{vmName}/Desktop")
 
     print("start")
