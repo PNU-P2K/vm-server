@@ -100,7 +100,7 @@ def load() :
     scope, control = str(requestDTO['scope']), str(requestDTO['control'])
     vmName = "vm"+port
     nodePort = str(requestDTO['nodePort'])
-    imagePath = str(requestDTO['imagePath'])
+    #imagePath = str(requestDTO['imagePath'])
 
     # PV yaml 파일 생성 
     pvPodYaml = func.generatePVPodYaml(vmName, vmName, vmName)
@@ -115,7 +115,7 @@ def load() :
         pvcYamlFile.write(pvcPodYaml)
 
     # Depolyment yaml 파일 생성 
-    deploymentPodYaml = func.generateDeploymentPodYaml(vmName, vmName, imagePath, port, vmName, vmName, vmName)
+    deploymentPodYaml = func.generateDeploymentPodYaml(vmName, vmName, deloadKey, port, vmName, vmName, vmName)
     deploymentFilePath = "/home/yaml/"+vmName+"Deployment.yaml"
     with open(deploymentFilePath, 'w') as deploymentYamlFile:
         deploymentYamlFile.write(deploymentPodYaml) 
