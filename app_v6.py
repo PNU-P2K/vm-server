@@ -264,7 +264,7 @@ def save() :
     
     userPath = func.buildDockerImage(f"registry.p2kcloud.com/base/{userId}", port, dockerFilePath, "/home/dockerFile/")
 
-    time.sleep(10)
+    time.sleep(60)
 
     print("push start")
     stream = os.popen(f"docker push registry.p2kcloud.com/base/{userId}:{port}")
