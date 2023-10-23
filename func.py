@@ -118,6 +118,56 @@ def generateDeploymentPodYaml(deploymentName, containerName, imageName, serviceP
 
     return deploymentYaml
 
+# deployment pod 만드는 함수
+def generateLoadDeploymentPodYaml(deploymentName, containerName, imageName, servicePort, pathName, volumeName, pvcName) : 
+    deploymentDefinition = {
+        "apiVersion": "apps/v1",
+        "kind": "Deployment",
+        "metadata": {"name": deploymentName}, 
+        "spec": {
+            "replicas": 1,
+            "selector": {
+                "matchLabels": {
+                    "app": "webdesktop", # service에서 pod를 선택할 때 구별하는 용도 
+                    "port": str(servicePort) # port label 추가
+                }
+            },
+            "template": {
+                "metadata": {
+                    "labels": {
+                        "app": "webdesktop", # 새로운 pod가 생성될 때 template 정의 
+                        "port": str(servicePort) # port label 추가 
+                    }
+                },
+                "spec": { 
+                    "containers": [ 
+                        {
+                            "name": containerName, 
+                            "image": imageName, 
+                            "ports": [{"containerPort": 6901}], # container 포트는 이미지 받을 때부터 열려있었던 포트인 6901로 접속해야 가능 
+                            "volumeMounts": [{
+                                "mountPath": "/var/backups/"+pathName,
+                                "name": volumeName    
+                            }],
+                            "command": ["/bin/bash", "-ec", "while :; do echo '.'; sleep 5; done"]
+                        } 
+                    ], 
+                    "imagePullSecrets": [{"name": "harbor"}], # harbor라는 이름의 kubeconfig.yaml 파일 
+                    "volumes": [{
+                        "name": volumeName,
+                        "persistentVolumeClaim": {
+                            "claimName": pvcName
+                        }
+                    }]
+                }
+            }
+        }
+    }
+
+    # YAML로 변환하여 문자열로 반환합니다.
+    deploymentYaml = yaml.dump(deploymentDefinition, default_flow_style=False)
+
+    return deploymentYaml
 
 # service pod를 만드는 함수 (pod를 외부로 노출하기 위함)
 def generateServiceYaml(serviceName, servicePort, nodePort):
