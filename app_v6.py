@@ -261,8 +261,6 @@ def save() :
     #accessContainer = f"kubectl cp {namespace}/{podName}:/home/kasm-user/ /home/dockerFile/backup/{vmName}/ --kubeconfig /root/kubeconfig.yml"
     #os.popen(accessContainer)
 
-    time.sleep(60)
-
     #dockerFileContent = func.createDockerfile("kasmweb/desktop:1.14.0", f"/home/backup/{vmName}")
     dockerFileContent = func.createDockerfile("registry.p2kcloud.com/base/1/kasmweb:1.14.0", vmName)
     dockerFilePath = "/home/dockerFile/"+vmName
