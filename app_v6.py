@@ -223,6 +223,8 @@ def stop():
     accessContainer = f"kubectl cp {namespace}/{podName}:/home/kasm-user/ /home/dockerFile/backup/{vmName} --kubeconfig /root/kubeconfig.yml"
     os.popen(accessContainer)
 
+    time.sleep(60)
+
     func.deleteDeployPodCmd(vmName)
     func.deleteServicePodCmd(vmName)
 
@@ -255,8 +257,9 @@ def save() :
 
     namespace = os.popen(func.getPodNameSpace(podName)).read()[:-1]
 
-    accessContainer = f"kubectl cp {namespace}/{podName}:/home/kasm-user/ /home/dockerFile/backup/{vmName}/ --kubeconfig /root/kubeconfig.yml"
-    os.popen(accessContainer)
+    
+    #accessContainer = f"kubectl cp {namespace}/{podName}:/home/kasm-user/ /home/dockerFile/backup/{vmName}/ --kubeconfig /root/kubeconfig.yml"
+    #os.popen(accessContainer)
 
     time.sleep(60)
 
