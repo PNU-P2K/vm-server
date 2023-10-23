@@ -247,7 +247,7 @@ def updateServiceYaml(serviceName, namespace, serviceYaml):
     return f"kubectl get service {serviceName} -n {namespace} -o yaml > {serviceYaml} --kubeconfig /root/kubeconfig.yml"
 
 # Dockerfile 작성함수 
-def createDockerfile(baseImage, sourcePath, vmName):
+def createDockerfile(baseImage, vmName):
     # Dockerfile 내용을 저장할 문자열 초기화
     dockerfileContent = f"FROM {baseImage}\n"
     
