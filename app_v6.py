@@ -100,7 +100,7 @@ def load() :
     scope, control = str(requestDTO['scope']), str(requestDTO['control'])
     vmName = "vm"+port
     nodePort = str(requestDTO['nodePort'])
-    imagePath = str(requestDTO['imagePath'])
+    #imagePath = str(requestDTO['imagePath'])
 
     # PV yaml 파일 생성 
     pvPodYaml = func.generatePVPodYaml(vmName, vmName, vmName)
@@ -115,7 +115,7 @@ def load() :
         pvcYamlFile.write(pvcPodYaml)
 
     # Depolyment yaml 파일 생성 
-    deploymentPodYaml = func.generateDeploymentPodYaml(vmName, vmName, deloadKey, port)
+    deploymentPodYaml = func.generateDeploymentPodYaml(vmName, vmName, deloadKey, port, vmName, vmName, vmName)
     deploymentFilePath = "/home/yaml/"+vmName+"Deployment.yaml"
     with open(deploymentFilePath, 'w') as deploymentYamlFile:
         deploymentYamlFile.write(deploymentPodYaml) 
@@ -216,7 +216,7 @@ def stop():
     print("name: "+namespace)
 
     print("start")
-    accessContainer = f"kubectl cp {namespace}/{podName}:/home/ /home/backup/{vmName} --kubeconfig /root/kubeconfig.yml"
+    accessContainer = f"kubectl cp {namespace}/{podName}:/home/ /home/dockerFile/backup/{vmName} --kubeconfig /root/kubeconfig.yml"
     os.popen(accessContainer)
 
     func.deleteDeployPodCmd(vmName)
@@ -251,11 +251,11 @@ def save() :
 
     namespace = os.popen(func.getPodNameSpace(podName)).read()[:-1]
 
-    accessContainer = f"kubectl cp {namespace}/{podName}:/home/ /home/backup/{vmName} --kubeconfig /root/kubeconfig.yml"
+    accessContainer = f"kubectl cp {namespace}/{podName}:/home/ /home/dockerFile/backup/{vmName} --kubeconfig /root/kubeconfig.yml"
     os.popen(accessContainer)
 
     #dockerFileContent = func.createDockerfile("kasmweb/desktop:1.14.0", f"/home/backup/{vmName}")
-    dockerFileContent = func.createDockerfile("registry.p2kcloud.com/base/1:6081", f"/home/backup/{vmName}")
+    dockerFileContent = func.createDockerfile("registry.p2kcloud.com/base/1/kasmweb:1.14.0", f"/home/dockerFile/backup/{vmName}")
     dockerFilePath = "/home/dockerFile/"+vmName
     with open(dockerFilePath, 'w') as dockerFile:
         dockerFile.write(dockerFileContent)
@@ -305,7 +305,7 @@ def delete():
     os.popen(func.deleteYamlFile(pvcFilePath))
     os.popen(func.deleteYamlFile(deploymentFilePath))
     os.popen(func.deleteYamlFile(serviceFilePath))
-    os.popen(f"rm -rf /home/backup/{vmName}")
+    os.popen(f"rm -rf /home/dockerFile/backup/{vmName}")
     os.popen(f"rm /home/dockerFile/{vmName}")
 
     os.popen(func.deletePVPodCmd(vmName))

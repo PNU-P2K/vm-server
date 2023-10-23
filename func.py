@@ -247,12 +247,14 @@ def updateServiceYaml(serviceName, namespace, serviceYaml):
     return f"kubectl get service {serviceName} -n {namespace} -o yaml > {serviceYaml} --kubeconfig /root/kubeconfig.yml"
 
 # Dockerfile 작성함수 
-def createDockerfile(baseImage, sourcePath):
+def createDockerfile(baseImage, sourcePath, vmName):
     # Dockerfile 내용을 저장할 문자열 초기화
     dockerfileContent = f"FROM {baseImage}\n"
     
     # 파일 복사 명령 추가
-    volumeMount = f"VOLUME [{sourcePath}]\n"
+    #volumeMount = f"VOLUME [{sourcePath}]\n"
+    volumeMount = f"COPY /backup/{vmName}/kasm-user/Desktop/ /home/kasm-user/Desktop/\n"
+
     dockerfileContent += volumeMount
 
     # Dockerfile 내용 반환
