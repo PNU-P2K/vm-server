@@ -129,9 +129,13 @@ def load() :
     print(deploymentPodYaml)
     print(servicePodYaml)
 
+    time.sleep(5)
     os.popen(func.applyPodCmd(pvFilePath))
+    time.sleep(5)
     os.popen(func.applyPodCmd(pvcFilePath))
+    time.sleep(5)
     os.popen(func.applyPodCmd(deploymentFilePath))
+    time.sleep(5)
     os.popen(func.applyPodCmd(serviceFilePath))
 
     nodeList = func.extractNodeInfo()
