@@ -37,6 +37,7 @@ def create():
     os.popen(func.startContainerCmd(containerId))
     os.popen(func.copyScriptToContainer(containerId))
     os.popen(func.stopContainerCmd(containerId))
+    os.popen(func.deleteContainerCmd(containerId))
 
     # PV yaml 파일 생성 
     pvPodYaml = func.generatePVPodYaml(vmName, vmName, vmName)
