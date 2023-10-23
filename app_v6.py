@@ -298,6 +298,7 @@ def save() :
     #print(stream.read())
     #print("push end")
 
+    os.popen(func.deleteContainerCmd(containerId))
     os.popen(f"docker rmi registry.p2kcloud.com/base/{userId}:{port}")
 
     time.sleep(2)
