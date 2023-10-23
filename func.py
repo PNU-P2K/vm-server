@@ -98,8 +98,7 @@ def generateDeploymentPodYaml(deploymentName, containerName, imageName, serviceP
                             "volumeMounts": [{
                                 "mountPath": "/var/backups/"+pathName,
                                 "name": volumeName    
-                            }],
-                            "command": ["/bin/sh", "-ec", "while :; do echo 'Hello World'; sleep 5 ; done"]
+                            }]
                         } 
                     ], 
                     "imagePullSecrets": [{"name": "harbor"}], # harbor라는 이름의 kubeconfig.yaml 파일 
