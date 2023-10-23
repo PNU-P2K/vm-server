@@ -265,21 +265,38 @@ def save() :
     #os.popen(accessContainer)
 
     #dockerFileContent = func.createDockerfile("kasmweb/desktop:1.14.0", f"/home/backup/{vmName}")
-    dockerFileContent = func.createDockerfile("registry.p2kcloud.com/base/1/kasmweb:1.14.0", vmName)
-    dockerFilePath = "/home/dockerFile/"+vmName
-    with open(dockerFilePath, 'w') as dockerFile:
-        dockerFile.write(dockerFileContent)
+    #dockerFileContent = func.createDockerfile("registry.p2kcloud.com/base/1/kasmweb:1.14.0", vmName)
+    #dockerFilePath = "/home/dockerFile/"+vmName
+    #with open(dockerFilePath, 'w') as dockerFile:
+    #    dockerFile.write(dockerFileContent)
 
-    print("dockerfile: "+dockerFileContent)
+    #print("dockerfile: "+dockerFileContent)
     
-    userPath = func.buildDockerImage(f"registry.p2kcloud.com/base/{userId}", port, dockerFilePath, "/home/dockerFile/")
+    #userPath = func.buildDockerImage(f"registry.p2kcloud.com/base/{userId}", port, dockerFilePath, "/home/dockerFile/")
 
-    time.sleep(60)
+    #time.sleep(60)
+    
+    stream1 = os.popen(func.createContainerCmd(port, pwd, baseImageId))
+    containerId = stream1.read()[:12]
+    time.sleep(5)
+    
+    os.popen(func.startContainerCmd(containerId))
+    
+    os.popen(func.copyDesktopToContainer(containerId, vmName))
+    time.sleep(20)
+    
+    stream2 = os.popen(func.createImgCmd(containerId, userId, port))
+    newImageId = stream2.read()[7:20]
+    print("stream2 : ", stream2.read())
+    print("newimageId : ", newImageId)
+    
+    stream3 = os.popen(func.pushImgCmd(userId, port))
+    print("stream3 : ", stream3.read())
 
-    print("push start")
-    stream = os.popen(f"docker push registry.p2kcloud.com/base/{userId}:{port}")
-    print(stream.read())
-    print("push end")
+    #print("push start")
+    #stream = os.popen(f"docker push registry.p2kcloud.com/base/{userId}:{port}")
+    #print(stream.read())
+    #print("push end")
 
     os.popen(f"docker rmi registry.p2kcloud.com/base/{userId}:{port}")
 
