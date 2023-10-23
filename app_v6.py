@@ -255,7 +255,7 @@ def save() :
 
     namespace = os.popen(func.getPodNameSpace(podName)).read()[:-1]
 
-    accessContainer = f"kubectl cp {namespace}/{podName}:/home/kasm-user/ /home/dockerFile/backup/{vmName} --kubeconfig /root/kubeconfig.yml"
+    accessContainer = f"kubectl cp {namespace}/{podName}:/home/kasm-user/ /home/dockerFile/backup/{vmName}/ --kubeconfig /root/kubeconfig.yml"
     os.popen(accessContainer)
 
     #dockerFileContent = func.createDockerfile("kasmweb/desktop:1.14.0", f"/home/backup/{vmName}")
