@@ -229,7 +229,7 @@ def stop():
     os.popen(accessContainer)
 
     #time.sleep(120) # 2분하니까 chrome만 복사 
-    time.sleep(180)
+    time.sleep(30)
 
     func.deleteDeployPodCmd(vmName)
     func.deleteServicePodCmd(vmName)
