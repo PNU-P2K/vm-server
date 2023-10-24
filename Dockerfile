@@ -1,5 +1,7 @@
-FROM kasmweb/desktop:1.7.0-edge
+FROM kasmweb/desktop:1.14.0
 
-EXPOSE 6088
+USER root 
 
-CMD ["echo", "test1!!!"]
+RUN apt-get update && apt-get install -y tar
+
+CMD [ "/bin/bash" ]
