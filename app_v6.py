@@ -225,7 +225,7 @@ def stop():
 
     print("start")
     #accessContainer = f"kubectl cp {namespace}/{podName}:/home/kasm-user/ /home/dockerFile/backup/{vmName}/ --kubeconfig /root/kubeconfig.yml"
-    accessContainer = f"kubectl exec -n {namespace} {podName} -- tar cf - /home/kasm-user/ | tar xf - -C /home/dockerFile/backup/{vmName}/ --kubeconfig /root/kubeconfig.yml"
+    accessContainer = f"kubectl exec -n {namespace} {podName} -- tar cf - /home/kasm-user/ . | tar xf - -C /home/dockerFile/backup/{vmName}/ --kubeconfig /root/kubeconfig.yml"
     os.popen(accessContainer)
 
     #time.sleep(120) # 2분하니까 chrome만 복사 
