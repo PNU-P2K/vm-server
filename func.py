@@ -8,10 +8,6 @@ from Crypto.Cipher import AES
 
 app = Flask(__name__)
 
-baseImageId = '539c2be37d94' # kasm-1.14.0 이미지 - test 서버 
-#baseImageId = '' # kasm-1.14.0 이미지 - 실서버
-#baseImageId = '1692c5f95a70e' # 로컬 이미지
-
 BS = 16
 pad = (lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS).encode())
 unpad = (lambda s: s[:-ord(s[len(s)-1:])])
@@ -283,43 +279,10 @@ def deleteYamlFile(yamlFilePath):
 def getPodNameSpace(podName):
     return f"kubectl get pod {podName} -o custom-columns=NAMESPACE:.metadata.namespace --no-headers --kubeconfig /root/kubeconfig.yml"
 
-# yaml 파일 업데이트 함수 - deployment
-def updateDeploymentYaml(deploymentName, namespace, deploymentYaml):
-    print("d: "+deploymentName)
-    print("n: "+ namespace)
-    print("path: "+deploymentYaml)
-    return f"kubectl get deployment {deploymentName} -n {namespace} -o yaml > {deploymentYaml} --kubeconfig /root/kubeconfig.yml"
-
-# yaml 파일 업데이트 함수 - service 
-def updateServiceYaml(serviceName, namespace, serviceYaml):
-    print("s: "+serviceName)
-    print("n: "+namespace)
-    return f"kubectl get service {serviceName} -n {namespace} -o yaml > {serviceYaml} --kubeconfig /root/kubeconfig.yml"
-
-# Dockerfile 작성함수 
-def createDockerfile(baseImage, vmName):
-    # Dockerfile 내용을 저장할 문자열 초기화
-    dockerfileContent = f"FROM {baseImage}\n"
-    
-    # 파일 복사 명령 추가
-    #volumeMount = f"VOLUME [{sourcePath}]\n"
-    volumeMount = f"COPY /backup/{vmName} /home/kasm-user/\n"
-
-    dockerfileContent += volumeMount
-
-    # Dockerfile 내용 반환
-    return dockerfileContent
-
 # Dockerfile build 함수 
 def buildDockerImage(imagePath, port, dockerFilePath, parentPath):
     os.popen(f"docker build -t {imagePath}:{port} -f {dockerFilePath} {parentPath}")
     return f"{imagePath}:{port}"
-
-def deleteScript():
-    return 
-
-def deleteBackUpData():
-    return
 
 #=================
 
@@ -343,9 +306,6 @@ def copyScriptToContainer(containerId) :
 def copyDesktopToContainer(containerId, vmName) :
     return "sudo docker cp /home/dockerFile/backup/"+vmName+"/Desktop/. "+containerId+":/home/kasm-user/Desktop/"
 
-def changeVncScopeAndControl(containerId, scope, control, pwd) :
-    return "docker exec -it --user root "+ containerId+" bash /dockerstartup/start.sh "+scope +" "+control+" "+pwd
-
 # 이미지 관련 명령어
 def createImgCmd(containerId, userId, port) : # registry.p2kcloud.com/base/userid:port 이름의 새로운 이미지 생성
     return "docker commit "+containerId+" registry.p2kcloud.com/base/"+userId+":"+port
@@ -353,14 +313,8 @@ def createImgCmd(containerId, userId, port) : # registry.p2kcloud.com/base/useri
 def pushImgCmd(userId, port) :          # harbor에 이미지 저장
     return "docker push registry.p2kcloud.com/base/"+userId+":"+port
 
-def pushImgCmdV2(dockerImage):
-    return "docker push registry.p2kcloud.com/base/"+dockerImage
-
 def deleteImgCmd(imageId) :             # imageid로 이미지 삭제
     return "docker rmi -f "+imageId
-
-def pullImgCmd() :      # harbor에서 kasm 이미지 pull -> 이미 pull 받아짐
-    return "docker pull registry.p2kcloud.com/base/vncdesktop"
 
 class AESCipher(object):
     def __init__(self, key):
