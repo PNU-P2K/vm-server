@@ -192,9 +192,18 @@ def start():
 
     time.sleep(2)
 
+    nodeList = func.extractNodeInfo()
+    time.sleep(60)
+    externalNodeIp = func.extractNodeIpOfPod(nodeList)
+
+    print("nodes: ", nodeList)
+    print("externalIp: ", externalNodeIp)
+
     response = {
             'port' : port,
-            'containerId' : containerId
+            'containerId' : containerId,
+            'externalNodeIp': externalNodeIp
+
         }
 
     return jsonify(response), 200
