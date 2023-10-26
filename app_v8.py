@@ -62,23 +62,10 @@ def create():
     print(deploymentPodYaml)
     print(servicePodYaml)
 
-    os.popen(func.applyPodCmd(pvFilePath))
-    os.popen(func.applyPodCmd(pvcFilePath))
-    os.popen(func.applyPodCmd(deploymentFilePath))
-    os.popen(func.applyPodCmd(serviceFilePath))
-
-    nodeList = func.extractNodeInfo()
-    time.sleep(60)
-    externalNodeIp = func.extractNodeIpOfPod(nodeList)
-
-    print("nodes: ", nodeList)
-    print("externalIp: ", externalNodeIp)
-
     response = {
             'port': port,
             'containerId' : enContainerId,
             'imageId' : enContainerId,#enImageId,
-            'externalNodeIp': externalNodeIp
         }
 
     return jsonify(response), 200
@@ -125,25 +112,8 @@ def load() :
     print(deploymentPodYaml)
     print(servicePodYaml)
 
-    time.sleep(5)
-    os.popen(func.applyPodCmd(pvFilePath))
-    time.sleep(5)
-    os.popen(func.applyPodCmd(pvcFilePath))
-    time.sleep(5)
-    os.popen(func.applyPodCmd(deploymentFilePath))
-    time.sleep(5)
-    os.popen(func.applyPodCmd(serviceFilePath))
-
-    nodeList = func.extractNodeInfo()
-    time.sleep(60)
-    externalNodeIp = func.extractNodeIpOfPod(nodeList)
-
-    print("nodes: ", nodeList)
-    print("externalIp: ", externalNodeIp)
-
     response = {
             'port': port,
-            'externalNodeIp': externalNodeIp
         }
 
 
