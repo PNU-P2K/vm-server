@@ -141,12 +141,33 @@ def start():
     deploymentFilePath = "/home/yaml/"+vmName+"Deployment.yaml"
     serviceFilePath = "/home/yaml/"+vmName+"Service.yaml"
 
+    nodes = func.extractNodeCPUAndMemory()
+    if len(nodes) >= 2:
+        maxMemUse, maxMemUseNode = func.findMinMaxCPUNodes(nodes)
+        print("maxMemUseNodee: ", maxMemUseNode)
+        print("\n maxMemUse: ", maxMemUse)
+
+        os.popen("kubectl cordon " + maxMemUseNode + " --kubeconfig /root/kubeconfig.yml") # 스케줄 불가로 만들기 - 더이상 pod 할당 안되게
+    
+        time.sleep(30) # 1분 대기 
+
+        result = os.popen("kubectl get nodes " + maxMemUseNode + " --kubeconfig /root/kubeconfig.yml").read()
+
+        print("result:", result) 
+
+        nodeInfo = result.split('\n')[1:-1] 
+        status = nodeInfo[0].split()[1] 
+
+        print("status: ", status)
+
     os.popen(func.applyPodCmd(pvFilePath))
     os.popen(func.applyPodCmd(pvcFilePath))
     os.popen(func.applyPodCmd(deploymentFilePath))
     os.popen(func.applyPodCmd(serviceFilePath))
 
     time.sleep(3)
+
+    os.popen("kubectl uncordon " + maxMemUseNode + " --kubeconfig /root/kubeconfig.yml") # 다시 풀어주기 
     
     stream1 = os.popen(func.getPodName(port))
     podName = stream1.read()[4:-1]
@@ -163,7 +184,7 @@ def start():
     time.sleep(2)
 
     nodeList = func.extractNodeInfo()
-    time.sleep(60)
+    time.sleep(30)
     externalNodeIp = func.extractNodeIpOfPod(nodeList)
 
     print("nodes: ", nodeList)
