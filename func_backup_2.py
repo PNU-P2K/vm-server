@@ -12,6 +12,8 @@ BS = 16
 pad = (lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS).encode())
 unpad = (lambda s: s[:-ord(s[len(s)-1:])])
 
+extractNodeInfos = dict()
+extractPodInfos = dict()
 extractNodeCPUs = dict()
 
 # pv pod 만드는 함수
@@ -201,8 +203,6 @@ def extractNodeInfo():
 
     print("nodeInfo: ", nodeInfoList)
 
-    extractNodeInfos = dict()
-
     for nodeInfo in nodeInfoList: 
         node = nodeInfo.split() 
         nodeName, nodeExternalIp = node[0], node[6] 
@@ -223,8 +223,6 @@ def extractPodInfo():
 
     print("podInfo: ", podInfoList)
 
-    extractPodInfos = dict()
-
     for podInfo in podInfoList: 
         pod = podInfo.split() 
         podName, nodeName = pod[0], pod[6] 
@@ -239,7 +237,7 @@ def extractNodeIpOfPod(nodeList):
 
     for _, nodeName in podList.items():
         if nodeName in nodeList:
-            return nodeList[nodeName]
+            return extractNodeInfos[nodeName]
 
     return "Not Found"
 
