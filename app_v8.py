@@ -143,7 +143,7 @@ def start():
 
     nodes = func.extractNodeCPUAndMemory()
     if len(nodes) >= 2:
-        maxMemUse, maxMemUseNode = func.findMinMaxCPUNodes(nodes)
+        maxMemUse, maxMemUseNode = func.findMaxMemNodes(nodes)
         print("maxMemUseNodee: ", maxMemUseNode)
         print("\n maxMemUse: ", maxMemUse)
 

@@ -385,7 +385,7 @@ def findMinMaxCPUNodesV2(nodeCpuList):
     return maxMemUse, maxMemUseNode
 
 # 30초 동안 memory 사용량이 최대인 노드들 추출 
-def findMinMaxCPUNodes(nodeCpuList):
+def findMaxMemNodes(nodeCpuList):
 
     maxMemUseNode = ''
     maxMemUse = 0 
