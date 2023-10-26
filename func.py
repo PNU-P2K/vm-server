@@ -360,7 +360,7 @@ def extractNodeCPUAndMemory():
     return extractNodeCPUs
 
 # 30초 동안 memory 사용량이 최대인 노드들 추출 
-def findMinMaxCPUNodes(nodeCpuList):
+def findMinMaxCPUNodesV2(nodeCpuList):
 
     maxMemUseNode = ''
     maxMemUse = 0 
@@ -379,6 +379,30 @@ def findMinMaxCPUNodes(nodeCpuList):
                         maxMemUse = temp 
                         maxMemUseNode = nodeName
                         maxMemUse = tempCpu
+
+        time.sleep(1) # 1초씩 
+
+    return maxMemUse, maxMemUseNode
+
+# 30초 동안 memory 사용량이 최대인 노드들 추출 
+def findMinMaxCPUNodes(nodeCpuList):
+
+    maxMemUseNode = ''
+    maxMemUse = 0 
+
+    for _ in range(30): # 총 30초 
+        for nodeName, resourceUse in nodeCpuList.items():
+            temp = float(resourceUse[1][:-1])
+            if temp > maxMemUse:
+                maxMemUse = temp 
+                maxMemUseNode = nodeName
+                maxMemUse = float(resourceUse[1][:-1])
+            if temp == maxMemUse:
+                tempCpu = float(resourceUse[0][:-1])
+                if tempCpu > maxMemUse:
+                    maxMemUse = temp 
+                    maxMemUseNode = nodeName
+                    maxMemUse = tempCpu
 
         time.sleep(1) # 1초씩 
 
