@@ -149,7 +149,7 @@ def start():
 
         os.popen("kubectl cordon " + maxMemUseNode + " --kubeconfig /root/kubeconfig.yml") # 스케줄 불가로 만들기 - 더이상 pod 할당 안되게
     
-        time.sleep(30) # 1분 대기 
+        time.sleep(30) # 30초 대기 
 
         result = os.popen("kubectl get nodes " + maxMemUseNode + " --kubeconfig /root/kubeconfig.yml").read()
 
@@ -165,7 +165,7 @@ def start():
     os.popen(func.applyPodCmd(deploymentFilePath))
     os.popen(func.applyPodCmd(serviceFilePath))
 
-    time.sleep(3)
+    time.sleep(30)
 
     os.popen("kubectl uncordon " + maxMemUseNode + " --kubeconfig /root/kubeconfig.yml") # 다시 풀어주기 
     
